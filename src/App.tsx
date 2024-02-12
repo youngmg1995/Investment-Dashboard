@@ -1,26 +1,34 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import MainPage from './frontend/MainPage';
+import UploadPage from './frontend/UploadPage';
+import {parseCSVFile} from './backend/utils'
+
+type Portfolio = any[];
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  // App state.
+  const [portfolio, setPortfolio] = React.useState<Portfolio>([]);
+
+  const onInputFileSubmission = (f: File) => {
+    // Check file is valid type, format, etc.
+    // Callback once CSV data extracted.
+    const parsingCallback = (data: any[]) => {
+      setPortfolio(data);
+    };
+    // Parse file.
+    parseCSVFile(f, parsingCallback);
+  }
+
+  // Additional properties determined by the App state.
+  const showUploadPage = (portfolio.length === 0);
+  if (showUploadPage) return (
+    <UploadPage onSubmit={onInputFileSubmission}/>
   );
+
+  return (
+    <MainPage portfolio={portfolio}/>
+  )
 }
 
 export default App;
