@@ -17,7 +17,7 @@ function portfolio2String(portfolio: any[]): string {
   return s;
 }
 
-function MainPage(props: MainPageProps) {
+export const MainPage: React.FC<MainPageProps> = (props) => {
   return (
     <div className="MainPage">
       <header className="MainPage-header">
@@ -39,6 +39,4 @@ function MainPage(props: MainPageProps) {
       </header>
     </div>
   );
-}
-
-export default MainPage;
+};
