@@ -22,7 +22,7 @@ import Chart from './Chart';
 import Deposits from './Deposits';
 import Orders from './Orders';
 
-import { Portfolio } from '../types';
+import Portfolio from '../portfolio';
 
 function Copyright(props: any) {
   return (
@@ -99,6 +99,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   const toggleDrawer = () => {
     setOpen(!open);
   };
+
+  console.log(props.portfolio);
 
   return (
     <ThemeProvider theme={defaultTheme}>

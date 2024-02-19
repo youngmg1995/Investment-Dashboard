@@ -12,6 +12,10 @@ export const UploadButton: React.FC<UploadButtonProps> = (props) => {
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (inputRef.current?.files && inputRef.current?.files?.length > 0) {
+      if (inputRef.current.files.length > 1) {
+        alert("Please submit 1 file.")
+        return;
+      }
       props.onSubmit(inputRef.current?.files);
     };
   }

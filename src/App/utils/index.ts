@@ -1,3 +1,3 @@
-import { parseCSVFile } from "./csv";
+import { csvRow, parseCSVFile } from "./csv";
 
-export { parseCSVFile };
+export { type csvRow, parseCSVFile };
