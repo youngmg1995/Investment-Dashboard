@@ -25,8 +25,13 @@ export enum Broker {
 
 interface Transaction {
   type: TransactionType;
-  time: Date;
-  amount: number;
+  trade_time: Date;
+  settle_time: Date;
+  symbol: string;
+  shares: number;
+  principal: number;
+  commission: number;
+  net: number;
 }
 
 export enum TransactionType {
@@ -47,6 +52,9 @@ export enum TransactionType {
 //   DIVIDEND = "dividend",
 // }
 
+const _CASH_SYMBOL = "0000";
+const _MONEY_MARKET_SYMBOL = "0001";
+
 
 /* *********************************  ********************************* */
 /*                                EXPORTS
@@ -62,23 +70,95 @@ export default class Portfolio {
   }
 
   deposit(time: Date, amount: number) {
-    this._makeTransaction(TransactionType.DEPOSIT, time, amount);
+    const trade_time = time;
+    const settle_time = time;
+    const symbol = _CASH_SYMBOL;
+    const shares = amount;
+    const principal = amount;
+    const commission = 0.00; 
+    const net = amount;
+    this.buy(
+      trade_time, settle_time, symbol, shares, principal, commission, net
+    );
   }
 
   withdrawal(time: Date, amount: number) {
-    this._makeTransaction(TransactionType.WITHDRAWAL, time, amount);
+    const trade_time = time;
+    const settle_time = time;
+    const symbol = _CASH_SYMBOL;
+    const shares = amount;
+    const principal = amount;
+    const commission = 0.00; 
+    const net = amount;
+    this.sell(
+      trade_time, settle_time, symbol, shares, principal, commission, net
+    );
   }
 
-  buy(time: Date, amount: number) {
-    this._makeTransaction(TransactionType.BUY, time, amount);
+  buy(
+    trade_time: Date,
+    settle_time: Date,
+    symbol: string,
+    shares: number,
+    principal: number,
+    commission: number,
+    net: number,
+  ) {
+    this._makeTransaction(
+      TransactionType.BUY,
+      trade_time,
+      settle_time,
+      symbol,
+      shares,
+      principal,
+      commission,
+      net,
+    );
   }
 
-  sell(time: Date, amount: number) {
-    this._makeTransaction(TransactionType.SELL, time, amount);
+  sell(
+    trade_time: Date,
+    settle_time: Date,
+    symbol: string,
+    shares: number,
+    principal: number,
+    commission: number,
+    net: number,
+  ) {
+    this._makeTransaction(
+      TransactionType.SELL,
+      trade_time,
+      settle_time,
+      symbol,
+      shares,
+      principal,
+      commission,
+      net,
+    );
   }
 
-  dividend(time: Date, amount: number) {
-    this._makeTransaction(TransactionType.DIVIDEND, time, amount);
+  dividend(
+    time: Date,
+    symbol: string,
+    principal: number,
+    commission: number,
+    net: number,
+  ) {
+    const trade_time = time;
+    const settle_time = time;
+    const shares = net;
+    this._makeTransaction(
+      TransactionType.DIVIDEND,
+      trade_time,
+      settle_time,
+      symbol,
+      shares,
+      principal,
+      commission,
+      net,
+    );
+    const amount = net;
+    this.deposit(time, amount); 
   }
 
   _addTranscation(t: Transaction) {
@@ -87,10 +167,24 @@ export default class Portfolio {
 
   private _makeTransaction(
     type: TransactionType,
-    time: Date,
-    amount: number,
+    trade_time: Date,
+    settle_time: Date,
+    symbol: string,
+    shares: number,
+    principal: number,
+    commission: number,
+    net: number,
   ) {
-    const t = _createTransaction(type, time, amount);
+    const t = _createTransaction(
+      type,
+      trade_time,
+      settle_time,
+      symbol,
+      shares,
+      principal,
+      commission,
+      net,
+    );
     this._addTranscation(t); 
   };
 }
@@ -101,13 +195,23 @@ export default class Portfolio {
 
 function _createTransaction(
   type: TransactionType,
-  time: Date,
-  amount: number,
+  trade_time: Date,
+  settle_time: Date,
+  symbol: string,
+  shares: number,
+  principal: number,
+  commission: number,
+  net: number,
 ): Transaction {
   return {
-    type: type,
-    time: time,
-    amount: amount,
+    type,
+    trade_time,
+    settle_time,
+    symbol,
+    shares,
+    principal,
+    commission,
+    net,
   } as Transaction;
 }
 

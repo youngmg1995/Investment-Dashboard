@@ -31,7 +31,8 @@ const _BROKER_PARSERS = new Map<Broker, PortfolioParser>([
 /* *********************************  ********************************* */
 
 export default function parsePortfolioFromFiles(
-  files: FileList, broker: Broker = Broker.VANGUARD): Promise<Portfolio> {
+  files: FileList, broker: Broker = Broker.VANGUARD
+): Promise<Portfolio> {
   if (files.length > 1) {
     throw new Error("Multi-file parsing is unsupported.");
   }
@@ -40,5 +41,6 @@ export default function parsePortfolioFromFiles(
   if (parser === undefined) {
     throw new Error(`Unsupported Broker: ${broker}`)
   }
+  console.log(broker);
   return parser.portfolioFromFile(files[0]);
 }

@@ -29,19 +29,25 @@ type csvRow = { [field: string]: string };
 
 export default abstract class PortfolioParser {
   // Top level params.
-  protected _broker: Broker = Broker.UNDEFINED;
+  private _broker: Broker;
   private _portfolio: Portfolio;
 
   // Field keys for parsing.
   protected abstract _type_field_key: string;
-  protected abstract _date_field_key: string;
-  protected abstract _amount_field_key: string;
+  protected abstract _trade_time_field_key: string;
+  protected abstract _settle_time_field_key: string;
+  protected abstract _symbol_field_key: string;
+  protected abstract _shares_field_key: string;
+  protected abstract _principal_field_key: string;
+  protected abstract _commission_field_key: string;
+  protected abstract _net_field_key: string;
 
   // Mappings for field values.
   protected abstract _transaction_type_mapping: Map<string, TransactionType>;
 
-  constructor() {
-    this._portfolio = new Portfolio(this._broker);
+  constructor(broker: Broker) {
+    this._broker = broker;
+    this._portfolio = new Portfolio(broker);
   }
 
   async portfolioFromFile(f: File): Promise<Portfolio> {
@@ -64,27 +70,74 @@ export default abstract class PortfolioParser {
         break;
       }
       case TransactionType.WITHDRAWAL: {
-        this._makeDeposit(row);
+        this._makeWithrawal(row);
         break;
       }
       case TransactionType.BUY: {
-        this._makeDeposit(row);
+        this._makeBuy(row);
         break;
       }
       case TransactionType.SELL: {
-        this._makeDeposit(row);
+        this._makeSell(row);
         break;
       }
       case TransactionType.DIVIDEND: {
-        this._makeDeposit(row);
+        this._makeDividend(row);
         break;
       }
       default: {
         throw new Error(`Unsupported transaction type: ${t}`);
       }
     };
-
   }
+
+  _makeDeposit(row: csvRow): void {
+    this._portfolio.deposit(
+      this._parseTradeTime(row),
+      this._parseNet(row),
+    );
+  };
+
+  _makeWithrawal(row: csvRow): void {
+    this._portfolio.withdrawal(
+      this._parseTradeTime(row),
+      this._parseNet(row),
+    );
+  };
+
+  _makeBuy(row: csvRow): void {
+    this._portfolio.buy(
+      this._parseTradeTime(row),
+      this._parseSettleTime(row),
+      this._parseSymbol(row),
+      this._parseShares(row),
+      this._parsePrincipal(row),
+      this._parseCommission(row),
+      this._parseNet(row),
+    );
+  };
+
+  _makeSell(row: csvRow): void {
+    this._portfolio.sell(
+      this._parseTradeTime(row),
+      this._parseSettleTime(row),
+      this._parseSymbol(row),
+      this._parseShares(row),
+      this._parsePrincipal(row),
+      this._parseCommission(row),
+      this._parseNet(row),
+    );
+  };
+
+  _makeDividend(row: csvRow): void {
+    this._portfolio.dividend(
+      this._parseTradeTime(row),
+      this._parseSymbol(row),
+      this._parsePrincipal(row),
+      this._parseCommission(row),
+      this._parseNet(row),
+    );
+  };
 
   _parseTransactionType(row: csvRow): TransactionType {
     const value = _getRowFieldValue(row, this._type_field_key);
@@ -95,48 +148,33 @@ export default abstract class PortfolioParser {
     return t;
   };
 
-  _parseTime(row: csvRow): Date {
+  _parseTradeTime(row: csvRow): Date {
     return new Date();
   }
 
-  _parseAmount(row: csvRow): number {
+  _parseSettleTime(row: csvRow): Date {
+    return new Date();
+  }
+
+  _parseSymbol(row: csvRow): string {
+    return "ABC";
+  }
+
+  _parseShares(row: csvRow): number {
     return 0;
   }
 
-  _makeDeposit(row: csvRow): void {
-    this._portfolio.deposit(
-      this._parseTime(row),
-      this._parseAmount(row),
-    );
-  };
+  _parsePrincipal(row: csvRow): number {
+    return 0;
+  }
 
-  _makeWithrawal(row: csvRow): void {
-    this._portfolio.withdrawal(
-      this._parseTime(row),
-      this._parseAmount(row),
-    );
-  };
+  _parseCommission(row: csvRow): number {
+    return 0;
+  }
 
-  _makeBuy(row: csvRow): void {
-    this._portfolio.buy(
-      this._parseTime(row),
-      this._parseAmount(row),
-    );
-  };
-
-  _makeSell(row: csvRow): void {
-    this._portfolio.sell(
-      this._parseTime(row),
-      this._parseAmount(row),
-    );
-  };
-
-  _makeDividend(row: csvRow): void {
-    this._portfolio.dividend(
-      this._parseTime(row),
-      this._parseAmount(row),
-    );
-  };
+  _parseNet(row: csvRow): number {
+    return 0;
+  }
 }
 
 
