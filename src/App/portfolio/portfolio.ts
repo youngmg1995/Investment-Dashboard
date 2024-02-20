@@ -11,12 +11,17 @@
 /*                                IMPORTS
 /* *********************************  ********************************* */
 
-import { csvRow, parseCSVFile } from "../utils";
-
 
 /* *********************************  ********************************* */
 /*                                 TYPES
 /* *********************************  ********************************* */
+
+export enum Broker {
+  UNDEFINED = "undefined",
+  VANGUARD = "vanguard",
+  FIDELITY = "fidelity",
+  ROBINHOOD = "robinhood",
+}
 
 interface Transaction {
   type: TransactionType;
@@ -24,7 +29,7 @@ interface Transaction {
   amount: number;
 }
 
-enum TransactionType {
+export enum TransactionType {
   UNDEFINED = "undefined",
   DEPOSIT = "deposit",
   WITHDRAWAL = "withdrawal",
@@ -33,31 +38,14 @@ enum TransactionType {
   DIVIDEND = "dividend",
 }
 
-enum Broker {
-  UNDEFINED = "undefined",
-  VANGUARD = "vanguard",
-  FIDELITY = "fidelity",
-  ROBINHOOD = "robinhood",
-}
-
-
-/* *********************************  ********************************* */
-/*                                PARAMS
-/* *********************************  ********************************* */
-
-const _VANGUARD_TRANSACTION_TYPE_FIELD_HEADING = "Transaction Description"
-const _VANGUARD_AMOUNT_FIELD_HEADING = "Principal Amount"
-const _VANGUARD_TIME_FIELD_HEADING = "Trade Date"
-
-
-const _VANGUARD_TRANSACTION_TYPE_MAPPING = new Map<string, TransactionType>([
-  ["Dividend Received", TransactionType.DIVIDEND],
-  ["Dividend Reinvestment", TransactionType.BUY],
-  ["Buy", TransactionType.BUY],
-  ["Sweep Out Of Settlement Fund", TransactionType.SELL],
-  ["Funds received via Electronic Bank Transfer", TransactionType.DEPOSIT],
-  ["Sweep Into Settlement Fund", TransactionType.BUY],
-]);
+// export enum TransactionSubType {
+//   UNDEFINED = "undefined",
+//   DEPOSIT = "deposit",
+//   WITHDRAWAL = "withdrawal",
+//   BUY = "buy",
+//   SELL = "sell",
+//   DIVIDEND = "dividend",
+// }
 
 
 /* *********************************  ********************************* */
@@ -65,30 +53,36 @@ const _VANGUARD_TRANSACTION_TYPE_MAPPING = new Map<string, TransactionType>([
 /* *********************************  ********************************* */
 
 export default class Portfolio {
+  private _broker: Broker;
   private _transaction_history: Transaction[];
 
-  constructor(transaction_history?: Transaction[]) {
+  constructor(broker: Broker, transaction_history?: Transaction[]) {
+    this._broker = broker;
     this._transaction_history = transaction_history || [];
+  }
+
+  deposit(time: Date, amount: number) {
+    this._makeTransaction(TransactionType.DEPOSIT, time, amount);
+  }
+
+  withdrawal(time: Date, amount: number) {
+    this._makeTransaction(TransactionType.WITHDRAWAL, time, amount);
+  }
+
+  buy(time: Date, amount: number) {
+    this._makeTransaction(TransactionType.BUY, time, amount);
+  }
+
+  sell(time: Date, amount: number) {
+    this._makeTransaction(TransactionType.SELL, time, amount);
+  }
+
+  dividend(time: Date, amount: number) {
+    this._makeTransaction(TransactionType.DIVIDEND, time, amount);
   }
 
   _addTranscation(t: Transaction) {
     this._transaction_history.push(t);
-  }
-
-  // total(): number {
-  //   let total = 0;
-  //   for (const t of this._transaction_history) {
-  //     total += (t.positive  ? t.amount : -t.amount);
-  //   }
-  //   return total;
-  // }
-
-  private _type_total(t_type: TransactionType): number {
-    let total = 0;
-    for (const t of this._transaction_history) {
-      if (t.type === t_type) {total += t.amount;};
-    }
-    return total;
   }
 
   private _makeTransaction(
@@ -100,12 +94,6 @@ export default class Portfolio {
     this._addTranscation(t); 
   };
 }
-
-export async function portfolioFromFile(f: File): Promise<Portfolio> {
-  const csvData = await parseCSVFile(f);
-  return _portfolioFromDataObjects(csvData);
-}
-
 
 /* *********************************  ********************************* */
 /*                                HELPERS
@@ -121,45 +109,5 @@ function _createTransaction(
     time: time,
     amount: amount,
   } as Transaction;
-}
-
-function _transactionFromVanguardData(d: any): Transaction {
-  const type = _VANGUARD_TRANSACTION_TYPE_MAPPING.get(d[_VANGUARD_TRANSACTION_TYPE_FIELD_HEADING]);
-  if (type === undefined) {
-    throw new Error(`Missing field in Vanguard portfolio data record: ${_VANGUARD_TRANSACTION_TYPE_FIELD_HEADING}`)
-  }
-  const time = new Date(d[_VANGUARD_TIME_FIELD_HEADING]);
-  const amount = Math.abs(Number(d[_VANGUARD_AMOUNT_FIELD_HEADING]))
-  return _createTransaction(
-    type,
-    time,
-    amount,
-  );
-}
-
-function _transactionFromDataObject(
-  d: csvRow, 
-  b: Broker = Broker.VANGUARD,
-): Transaction {
-  switch (b) {
-    case Broker.VANGUARD: {
-      return _transactionFromVanguardData(d);
-    }
-    default: {
-      throw new Error(`Unsupported broker: ${b}`);
-    }
-  }
-}
-
-function _portfolioFromDataObjects(
-  data: csvRow[],
-  broker: Broker = Broker.VANGUARD,
-): Portfolio {
-  let portfolio = new Portfolio();
-  for (let d of data) {
-    const t = _transactionFromDataObject(d, broker);
-    portfolio._addTranscation(t);
-  }
-  return portfolio;
 }
 

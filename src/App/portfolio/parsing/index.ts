@@ -1,18 +1,15 @@
 /**
- * Library for Portfolio class which represents a financial account
- * created through a series of transactions.
- * 
- * Usage:
- * 
- *   let portflio = new Portfolio()
+ * Library for extracting data from a CSV file into a Portfolio class
+ * instance.
  */
 
 /* *********************************  ********************************* */
 /*                                IMPORTS
 /* *********************************  ********************************* */
 
-import Portfolio from "./portfolio";
-import parsePortfolioFromFiles from "./parsing";
+import Portfolio, { Broker } from "../portfolio";
+import PortfolioParser from "./parser";
+import VanguardPortfolioParser from "./vanguard_parser";
 
 
 /* *********************************  ********************************* */
@@ -25,11 +22,23 @@ import parsePortfolioFromFiles from "./parsing";
 /*                                PARAMS
 /* *********************************  ********************************* */
 
-
+const _BROKER_PARSERS = new Map<Broker, PortfolioParser>([
+  [Broker.VANGUARD, new VanguardPortfolioParser()],
+]);
 
 /* *********************************  ********************************* */
 /*                                EXPORTS
 /* *********************************  ********************************* */
 
-export default Portfolio;
-export { parsePortfolioFromFiles };
+export default function parsePortfolioFromFiles(
+  files: FileList, broker: Broker = Broker.VANGUARD): Promise<Portfolio> {
+  if (files.length > 1) {
+    throw new Error("Multi-file parsing is unsupported.");
+  }
+
+  const parser = _BROKER_PARSERS.get(broker);
+  if (parser === undefined) {
+    throw new Error(`Unsupported Broker: ${broker}`)
+  }
+  return parser.portfolioFromFile(files[0]);
+}

@@ -1,7 +1,6 @@
 import React from 'react';
 
-import Portfolio from './portfolio';
-import { portfolioFromFile } from './portfolio';
+import Portfolio, { parsePortfolioFromFiles } from './portfolio';
 import Dashboard from './dashboard';
 import FileUploader from './FileUploader';
 
@@ -11,10 +10,7 @@ const App: React.FC = () => {
   console.log(portfolio);
 
   const uploadPortfolioFromFiles = async (files: FileList) => {
-    if (files.length > 1) {
-      throw new Error('Can only upload a single file for a portfolio.');
-    }
-    const portfolio = await portfolioFromFile(files[0])
+    const portfolio = await parsePortfolioFromFiles(files)
     setPortfolio(portfolio);
   }
 
