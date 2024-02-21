@@ -25,8 +25,8 @@ export enum Broker {
 
 interface Transaction {
   type: TransactionType;
-  trade_time: Date;
-  settle_time: Date;
+  trade_date: Date;
+  settle_date: Date;
   symbol: string;
   shares: number;
   principal: number;
@@ -53,7 +53,7 @@ export enum TransactionType {
 // }
 
 const _CASH_SYMBOL = "0000";
-const _MONEY_MARKET_SYMBOL = "0001";
+export const MONEY_MARKET_SYMBOL = "0001";
 
 
 /* *********************************  ********************************* */
@@ -70,34 +70,34 @@ export default class Portfolio {
   }
 
   deposit(time: Date, amount: number) {
-    const trade_time = time;
-    const settle_time = time;
+    const trade_date = time;
+    const settle_date = time;
     const symbol = _CASH_SYMBOL;
     const shares = amount;
     const principal = amount;
     const commission = 0.00; 
     const net = amount;
     this.buy(
-      trade_time, settle_time, symbol, shares, principal, commission, net
+      trade_date, settle_date, symbol, shares, principal, commission, net
     );
   }
 
   withdrawal(time: Date, amount: number) {
-    const trade_time = time;
-    const settle_time = time;
+    const trade_date = time;
+    const settle_date = time;
     const symbol = _CASH_SYMBOL;
     const shares = amount;
     const principal = amount;
     const commission = 0.00; 
     const net = amount;
     this.sell(
-      trade_time, settle_time, symbol, shares, principal, commission, net
+      trade_date, settle_date, symbol, shares, principal, commission, net
     );
   }
 
   buy(
-    trade_time: Date,
-    settle_time: Date,
+    trade_date: Date,
+    settle_date: Date,
     symbol: string,
     shares: number,
     principal: number,
@@ -106,8 +106,8 @@ export default class Portfolio {
   ) {
     this._makeTransaction(
       TransactionType.BUY,
-      trade_time,
-      settle_time,
+      trade_date,
+      settle_date,
       symbol,
       shares,
       principal,
@@ -117,8 +117,8 @@ export default class Portfolio {
   }
 
   sell(
-    trade_time: Date,
-    settle_time: Date,
+    trade_date: Date,
+    settle_date: Date,
     symbol: string,
     shares: number,
     principal: number,
@@ -127,8 +127,8 @@ export default class Portfolio {
   ) {
     this._makeTransaction(
       TransactionType.SELL,
-      trade_time,
-      settle_time,
+      trade_date,
+      settle_date,
       symbol,
       shares,
       principal,
@@ -144,13 +144,13 @@ export default class Portfolio {
     commission: number,
     net: number,
   ) {
-    const trade_time = time;
-    const settle_time = time;
+    const trade_date = time;
+    const settle_date = time;
     const shares = net;
     this._makeTransaction(
       TransactionType.DIVIDEND,
-      trade_time,
-      settle_time,
+      trade_date,
+      settle_date,
       symbol,
       shares,
       principal,
@@ -167,8 +167,8 @@ export default class Portfolio {
 
   private _makeTransaction(
     type: TransactionType,
-    trade_time: Date,
-    settle_time: Date,
+    trade_date: Date,
+    settle_date: Date,
     symbol: string,
     shares: number,
     principal: number,
@@ -177,8 +177,8 @@ export default class Portfolio {
   ) {
     const t = _createTransaction(
       type,
-      trade_time,
-      settle_time,
+      trade_date,
+      settle_date,
       symbol,
       shares,
       principal,
@@ -195,8 +195,8 @@ export default class Portfolio {
 
 function _createTransaction(
   type: TransactionType,
-  trade_time: Date,
-  settle_time: Date,
+  trade_date: Date,
+  settle_date: Date,
   symbol: string,
   shares: number,
   principal: number,
@@ -205,8 +205,8 @@ function _createTransaction(
 ): Transaction {
   return {
     type,
-    trade_time,
-    settle_time,
+    trade_date: trade_date,
+    settle_date: settle_date,
     symbol,
     shares,
     principal,

@@ -32,8 +32,8 @@ export default class VanguardPortfolioParser extends PortfolioParser {
 
   // Field keys for parsing.
   protected _type_field_key: string = "Transaction Description";
-  protected _trade_time_field_key: string = "Trade Date";
-  protected _settle_time_field_key: string = "Settlement Date";
+  protected _trade_date_field_key: string = "Trade Date";
+  protected _settle_date_field_key: string = "Settlement Date";
   protected _symbol_field_key: string = "Symbol";
   protected _shares_field_key: string = "Shares";
   protected _principal_field_key: string = "Principal Amount";

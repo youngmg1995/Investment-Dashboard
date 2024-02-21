@@ -34,8 +34,8 @@ export default abstract class PortfolioParser {
 
   // Field keys for parsing.
   protected abstract _type_field_key: string;
-  protected abstract _trade_time_field_key: string;
-  protected abstract _settle_time_field_key: string;
+  protected abstract _trade_date_field_key: string;
+  protected abstract _settle_date_field_key: string;
   protected abstract _symbol_field_key: string;
   protected abstract _shares_field_key: string;
   protected abstract _principal_field_key: string;
@@ -93,22 +93,22 @@ export default abstract class PortfolioParser {
 
   _makeDeposit(row: csvRow): void {
     this._portfolio.deposit(
-      this._parseTradeTime(row),
+      this._parseTradeDate(row),
       this._parseNet(row),
     );
   };
 
   _makeWithrawal(row: csvRow): void {
     this._portfolio.withdrawal(
-      this._parseTradeTime(row),
+      this._parseTradeDate(row),
       this._parseNet(row),
     );
   };
 
   _makeBuy(row: csvRow): void {
     this._portfolio.buy(
-      this._parseTradeTime(row),
-      this._parseSettleTime(row),
+      this._parseTradeDate(row),
+      this._parseSettleDate(row),
       this._parseSymbol(row),
       this._parseShares(row),
       this._parsePrincipal(row),
@@ -119,8 +119,8 @@ export default abstract class PortfolioParser {
 
   _makeSell(row: csvRow): void {
     this._portfolio.sell(
-      this._parseTradeTime(row),
-      this._parseSettleTime(row),
+      this._parseTradeDate(row),
+      this._parseSettleDate(row),
       this._parseSymbol(row),
       this._parseShares(row),
       this._parsePrincipal(row),
@@ -131,7 +131,7 @@ export default abstract class PortfolioParser {
 
   _makeDividend(row: csvRow): void {
     this._portfolio.dividend(
-      this._parseTradeTime(row),
+      this._parseTradeDate(row),
       this._parseSymbol(row),
       this._parsePrincipal(row),
       this._parseCommission(row),
@@ -140,7 +140,7 @@ export default abstract class PortfolioParser {
   };
 
   _parseTransactionType(row: csvRow): TransactionType {
-    const value = _getRowFieldValue(row, this._type_field_key);
+    const value = _getStringRowFieldValue(row, this._type_field_key);
     const t = this._transaction_type_mapping.get(value);
     if (t === undefined) {
       throw new Error(`Invalid ${this._broker} TransactionType value: ${value}`);
@@ -148,32 +148,32 @@ export default abstract class PortfolioParser {
     return t;
   };
 
-  _parseTradeTime(row: csvRow): Date {
-    return new Date();
+  _parseTradeDate(row: csvRow): Date {
+    return _getDateRowFieldValue(row, this._trade_date_field_key);
   }
 
-  _parseSettleTime(row: csvRow): Date {
-    return new Date();
+  _parseSettleDate(row: csvRow): Date {
+    return _getDateRowFieldValue(row, this._settle_date_field_key);
   }
 
   _parseSymbol(row: csvRow): string {
-    return "ABC";
+    return _getStringRowFieldValue(row, this._symbol_field_key);
   }
 
   _parseShares(row: csvRow): number {
-    return 0;
+    return _getNumericRowFieldValue(row, this._shares_field_key);
   }
 
   _parsePrincipal(row: csvRow): number {
-    return 0;
+    return _getNumericRowFieldValue(row, this._principal_field_key);
   }
 
   _parseCommission(row: csvRow): number {
-    return 0;
+    return _getNumericRowFieldValue(row, this._commission_field_key);
   }
 
   _parseNet(row: csvRow): number {
-    return 0;
+    return _getNumericRowFieldValue(row, this._net_field_key);
   }
 }
 
@@ -195,7 +195,17 @@ function _parseCSVFile(csv_file: any): Promise<csvRow[]> {
   });
 }
 
-function _getRowFieldValue(row: csvRow, field_key: string): string {
+function _getDateRowFieldValue(row: csvRow, field_key: string): Date {
+  const value = _getStringRowFieldValue(row, field_key);
+  return new Date(value);
+}
+
+function _getNumericRowFieldValue(row: csvRow, field_key: string): number {
+  const value = _getStringRowFieldValue(row, field_key);
+  return Number(value);
+}
+
+function _getStringRowFieldValue(row: csvRow, field_key: string): string {
   const value = row[field_key];
   if (value === undefined) {
     throw new Error(`Field key "${field_key}" not found for row: ${row}`);
