@@ -25,8 +25,8 @@ export enum Broker {
 
 interface Transaction {
   type: TransactionType;
-  trade_date: Date;
-  settle_date: Date;
+  tradeDate: Date;
+  settleDate: Date;
   symbol: string;
   shares: number;
   principal: number;
@@ -52,7 +52,7 @@ export enum TransactionType {
 //   DIVIDEND = "dividend",
 // }
 
-const _CASH_SYMBOL = "0000";
+const  CASH_SYMBOL = "0000";
 export const MONEY_MARKET_SYMBOL = "0001";
 
 
@@ -61,53 +61,53 @@ export const MONEY_MARKET_SYMBOL = "0001";
 /* *********************************  ********************************* */
 
 export default class Portfolio {
-  private _broker: Broker;
-  private _transaction_history: Transaction[];
+  private  broker: Broker;
+  private  transactionHistory: Transaction[];
 
-  constructor(broker: Broker, transaction_history?: Transaction[]) {
-    this._broker = broker;
-    this._transaction_history = transaction_history || [];
+  constructor(broker: Broker, transactionHistory?: Transaction[]) {
+    this.broker = broker;
+    this.transactionHistory = transactionHistory || [];
   }
 
   deposit(time: Date, amount: number) {
-    const trade_date = time;
-    const settle_date = time;
-    const symbol = _CASH_SYMBOL;
+    const tradeDate = time;
+    const settleDate = time;
+    const symbol =  CASH_SYMBOL;
     const shares = amount;
     const principal = amount;
     const commission = 0.00; 
     const net = amount;
     this.buy(
-      trade_date, settle_date, symbol, shares, principal, commission, net
+      tradeDate, settleDate, symbol, shares, principal, commission, net
     );
   }
 
   withdrawal(time: Date, amount: number) {
-    const trade_date = time;
-    const settle_date = time;
-    const symbol = _CASH_SYMBOL;
+    const tradeDate = time;
+    const settleDate = time;
+    const symbol =  CASH_SYMBOL;
     const shares = amount;
     const principal = amount;
     const commission = 0.00; 
     const net = amount;
     this.sell(
-      trade_date, settle_date, symbol, shares, principal, commission, net
+      tradeDate, settleDate, symbol, shares, principal, commission, net
     );
   }
 
   buy(
-    trade_date: Date,
-    settle_date: Date,
+    tradeDate: Date,
+    settleDate: Date,
     symbol: string,
     shares: number,
     principal: number,
     commission: number,
     net: number,
   ) {
-    this._makeTransaction(
+    this.makeTransaction(
       TransactionType.BUY,
-      trade_date,
-      settle_date,
+      tradeDate,
+      settleDate,
       symbol,
       shares,
       principal,
@@ -117,18 +117,18 @@ export default class Portfolio {
   }
 
   sell(
-    trade_date: Date,
-    settle_date: Date,
+    tradeDate: Date,
+    settleDate: Date,
     symbol: string,
     shares: number,
     principal: number,
     commission: number,
     net: number,
   ) {
-    this._makeTransaction(
+    this.makeTransaction(
       TransactionType.SELL,
-      trade_date,
-      settle_date,
+      tradeDate,
+      settleDate,
       symbol,
       shares,
       principal,
@@ -144,13 +144,13 @@ export default class Portfolio {
     commission: number,
     net: number,
   ) {
-    const trade_date = time;
-    const settle_date = time;
+    const tradeDate = time;
+    const settleDate = time;
     const shares = net;
-    this._makeTransaction(
+    this.makeTransaction(
       TransactionType.DIVIDEND,
-      trade_date,
-      settle_date,
+      tradeDate,
+      settleDate,
       symbol,
       shares,
       principal,
@@ -161,31 +161,31 @@ export default class Portfolio {
     this.deposit(time, amount); 
   }
 
-  _addTranscation(t: Transaction) {
-    this._transaction_history.push(t);
+   addTranscation(t: Transaction) {
+    this.transactionHistory.push(t);
   }
 
-  private _makeTransaction(
+  private  makeTransaction(
     type: TransactionType,
-    trade_date: Date,
-    settle_date: Date,
+    tradeDate: Date,
+    settleDate: Date,
     symbol: string,
     shares: number,
     principal: number,
     commission: number,
     net: number,
   ) {
-    const t = _createTransaction(
+    const t =  createTransaction(
       type,
-      trade_date,
-      settle_date,
+      tradeDate,
+      settleDate,
       symbol,
       shares,
       principal,
       commission,
       net,
     );
-    this._addTranscation(t); 
+    this.addTranscation(t); 
   };
 }
 
@@ -193,10 +193,10 @@ export default class Portfolio {
 /*                                HELPERS
 /* *********************************  ********************************* */
 
-function _createTransaction(
+function  createTransaction(
   type: TransactionType,
-  trade_date: Date,
-  settle_date: Date,
+  tradeDate: Date,
+  settleDate: Date,
   symbol: string,
   shares: number,
   principal: number,
@@ -205,8 +205,8 @@ function _createTransaction(
 ): Transaction {
   return {
     type,
-    trade_date: trade_date,
-    settle_date: settle_date,
+    tradeDate: tradeDate,
+    settleDate: settleDate,
     symbol,
     shares,
     principal,

@@ -28,20 +28,20 @@ import { Broker, TransactionType } from '../portfolio';
 
 export default class VanguardPortfolioParser extends PortfolioParser {
   // Top level params.
-  static _broker: Broker = Broker.VANGUARD;
+  static  broker: Broker = Broker.VANGUARD;
 
   // Field keys for parsing.
-  protected _type_field_key: string = "Transaction Description";
-  protected _trade_date_field_key: string = "Trade Date";
-  protected _settle_date_field_key: string = "Settlement Date";
-  protected _symbol_field_key: string = "Symbol";
-  protected _shares_field_key: string = "Shares";
-  protected _principal_field_key: string = "Principal Amount";
-  protected _commission_field_key: string = "Commission Fees";
-  protected _net_field_key: string = "Net Amount";
+  protected  typeFieldKey: string = "Transaction Description";
+  protected  tradeDateFieldKey: string = "Trade Date";
+  protected  settleDateFieldKey: string = "Settlement Date";
+  protected  symbolFieldKey: string = "Symbol";
+  protected  sharesFieldKey: string = "Shares";
+  protected  principalFieldKey: string = "Principal Amount";
+  protected  commissionFieldKey: string = "Commission Fees";
+  protected  netFieldKey: string = "Net Amount";
 
   // Mappings for field values.
-  _transaction_type_mapping: Map<string, TransactionType> = new Map<string, TransactionType>([
+   transactionTypeMapping: Map<string, TransactionType> = new Map<string, TransactionType>([
     ["Dividend Received", TransactionType.DIVIDEND],
     ["Dividend Reinvestment", TransactionType.BUY],
     ["Buy", TransactionType.BUY],
@@ -51,7 +51,7 @@ export default class VanguardPortfolioParser extends PortfolioParser {
   ]);
 
   constructor() {
-    super(VanguardPortfolioParser._broker);
+    super(VanguardPortfolioParser.broker);
   }
 }
 

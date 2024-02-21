@@ -29,60 +29,60 @@ type csvRow = { [field: string]: string };
 
 export default abstract class PortfolioParser {
   // Top level params.
-  private _broker: Broker;
-  private _portfolio: Portfolio;
+  private  broker: Broker;
+  private  portfolio: Portfolio;
 
   // Field keys for parsing.
-  protected abstract _type_field_key: string;
-  protected abstract _trade_date_field_key: string;
-  protected abstract _settle_date_field_key: string;
-  protected abstract _symbol_field_key: string;
-  protected abstract _shares_field_key: string;
-  protected abstract _principal_field_key: string;
-  protected abstract _commission_field_key: string;
-  protected abstract _net_field_key: string;
+  protected abstract  typeFieldKey: string;
+  protected abstract  tradeDateFieldKey: string;
+  protected abstract  settleDateFieldKey: string;
+  protected abstract  symbolFieldKey: string;
+  protected abstract  sharesFieldKey: string;
+  protected abstract  principalFieldKey: string;
+  protected abstract  commissionFieldKey: string;
+  protected abstract  netFieldKey: string;
 
   // Mappings for field values.
-  protected abstract _transaction_type_mapping: Map<string, TransactionType>;
+  protected abstract  transactionTypeMapping: Map<string, TransactionType>;
 
   constructor(broker: Broker) {
-    this._broker = broker;
-    this._portfolio = new Portfolio(broker);
+    this.broker = broker;
+    this.portfolio = new Portfolio(broker);
   }
 
   async portfolioFromFile(f: File): Promise<Portfolio> {
-    const csvData = await _parseCSVFile(f);
-    this._parseCsvData(csvData);
-    return this._portfolio;
+    const csvData = await  parseCSVFile(f);
+    this.parseCsvData(csvData);
+    return this.portfolio;
   }
 
-  _parseCsvData(data: csvRow[]): void {
+   parseCsvData(data: csvRow[]): void {
     for (let d of data) {
-      const t = this._parseTransactionType(d);
-      this._updatePortfolio(t, d);
+      const t = this.parseTransactionType(d);
+      this.updatePortfolio(t, d);
     }
   }
 
-  _updatePortfolio(t: TransactionType, row: csvRow): void {
+   updatePortfolio(t: TransactionType, row: csvRow): void {
     switch (t) {
       case TransactionType.DEPOSIT: {
-        this._makeDeposit(row);
+        this.makeDeposit(row);
         break;
       }
       case TransactionType.WITHDRAWAL: {
-        this._makeWithrawal(row);
+        this.makeWithrawal(row);
         break;
       }
       case TransactionType.BUY: {
-        this._makeBuy(row);
+        this.makeBuy(row);
         break;
       }
       case TransactionType.SELL: {
-        this._makeSell(row);
+        this.makeSell(row);
         break;
       }
       case TransactionType.DIVIDEND: {
-        this._makeDividend(row);
+        this.makeDividend(row);
         break;
       }
       default: {
@@ -91,89 +91,89 @@ export default abstract class PortfolioParser {
     };
   }
 
-  _makeDeposit(row: csvRow): void {
-    this._portfolio.deposit(
-      this._parseTradeDate(row),
-      this._parseNet(row),
+   makeDeposit(row: csvRow): void {
+    this.portfolio.deposit(
+      this.parseTradeDate(row),
+      this.parseNet(row),
     );
   };
 
-  _makeWithrawal(row: csvRow): void {
-    this._portfolio.withdrawal(
-      this._parseTradeDate(row),
-      this._parseNet(row),
+   makeWithrawal(row: csvRow): void {
+    this.portfolio.withdrawal(
+      this.parseTradeDate(row),
+      this.parseNet(row),
     );
   };
 
-  _makeBuy(row: csvRow): void {
-    this._portfolio.buy(
-      this._parseTradeDate(row),
-      this._parseSettleDate(row),
-      this._parseSymbol(row),
-      this._parseShares(row),
-      this._parsePrincipal(row),
-      this._parseCommission(row),
-      this._parseNet(row),
+   makeBuy(row: csvRow): void {
+    this.portfolio.buy(
+      this.parseTradeDate(row),
+      this.parseSettleDate(row),
+      this.parseSymbol(row),
+      this.parseShares(row),
+      this.parsePrincipal(row),
+      this.parseCommission(row),
+      this.parseNet(row),
     );
   };
 
-  _makeSell(row: csvRow): void {
-    this._portfolio.sell(
-      this._parseTradeDate(row),
-      this._parseSettleDate(row),
-      this._parseSymbol(row),
-      this._parseShares(row),
-      this._parsePrincipal(row),
-      this._parseCommission(row),
-      this._parseNet(row),
+   makeSell(row: csvRow): void {
+    this.portfolio.sell(
+      this.parseTradeDate(row),
+      this.parseSettleDate(row),
+      this.parseSymbol(row),
+      this.parseShares(row),
+      this.parsePrincipal(row),
+      this.parseCommission(row),
+      this.parseNet(row),
     );
   };
 
-  _makeDividend(row: csvRow): void {
-    this._portfolio.dividend(
-      this._parseTradeDate(row),
-      this._parseSymbol(row),
-      this._parsePrincipal(row),
-      this._parseCommission(row),
-      this._parseNet(row),
+   makeDividend(row: csvRow): void {
+    this.portfolio.dividend(
+      this.parseTradeDate(row),
+      this.parseSymbol(row),
+      this.parsePrincipal(row),
+      this.parseCommission(row),
+      this.parseNet(row),
     );
   };
 
-  _parseTransactionType(row: csvRow): TransactionType {
-    const value = _getStringRowFieldValue(row, this._type_field_key);
-    const t = this._transaction_type_mapping.get(value);
+   parseTransactionType(row: csvRow): TransactionType {
+    const value =  getStringRowFieldValue(row, this.typeFieldKey);
+    const t = this.transactionTypeMapping.get(value);
     if (t === undefined) {
-      throw new Error(`Invalid ${this._broker} TransactionType value: ${value}`);
+      throw new Error(`Invalid ${this.broker} TransactionType value: ${value}`);
     }
     return t;
   };
 
-  _parseTradeDate(row: csvRow): Date {
-    return _getDateRowFieldValue(row, this._trade_date_field_key);
+   parseTradeDate(row: csvRow): Date {
+    return  getDateRowFieldValue(row, this.tradeDateFieldKey);
   }
 
-  _parseSettleDate(row: csvRow): Date {
-    return _getDateRowFieldValue(row, this._settle_date_field_key);
+   parseSettleDate(row: csvRow): Date {
+    return  getDateRowFieldValue(row, this.settleDateFieldKey);
   }
 
-  _parseSymbol(row: csvRow): string {
-    return _getStringRowFieldValue(row, this._symbol_field_key);
+   parseSymbol(row: csvRow): string {
+    return  getStringRowFieldValue(row, this.symbolFieldKey);
   }
 
-  _parseShares(row: csvRow): number {
-    return _getNumericRowFieldValue(row, this._shares_field_key);
+   parseShares(row: csvRow): number {
+    return  getNumericRowFieldValue(row, this.sharesFieldKey);
   }
 
-  _parsePrincipal(row: csvRow): number {
-    return _getNumericRowFieldValue(row, this._principal_field_key);
+   parsePrincipal(row: csvRow): number {
+    return  getNumericRowFieldValue(row, this.principalFieldKey);
   }
 
-  _parseCommission(row: csvRow): number {
-    return _getNumericRowFieldValue(row, this._commission_field_key);
+   parseCommission(row: csvRow): number {
+    return  getNumericRowFieldValue(row, this.commissionFieldKey);
   }
 
-  _parseNet(row: csvRow): number {
-    return _getNumericRowFieldValue(row, this._net_field_key);
+   parseNet(row: csvRow): number {
+    return  getNumericRowFieldValue(row, this.netFieldKey);
   }
 }
 
@@ -182,7 +182,7 @@ export default abstract class PortfolioParser {
 /*                                HELPERS
 /* *********************************  ********************************* */
 
-function _parseCSVFile(csv_file: any): Promise<csvRow[]> {
+function  parseCSVFile(csvFile: any): Promise<csvRow[]> {
   return new Promise((resolve, reject) => {
     const config: ParseConfig = {
         header: true,
@@ -191,24 +191,24 @@ function _parseCSVFile(csv_file: any): Promise<csvRow[]> {
             resolve(results.data);
         }
     }
-    Papa.parse(csv_file, config);
+    Papa.parse(csvFile, config);
   });
 }
 
-function _getDateRowFieldValue(row: csvRow, field_key: string): Date {
-  const value = _getStringRowFieldValue(row, field_key);
+function  getDateRowFieldValue(row: csvRow, fieldKey: string): Date {
+  const value =  getStringRowFieldValue(row, fieldKey);
   return new Date(value);
 }
 
-function _getNumericRowFieldValue(row: csvRow, field_key: string): number {
-  const value = _getStringRowFieldValue(row, field_key);
+function  getNumericRowFieldValue(row: csvRow, fieldKey: string): number {
+  const value =  getStringRowFieldValue(row, fieldKey);
   return Number(value);
 }
 
-function _getStringRowFieldValue(row: csvRow, field_key: string): string {
-  const value = row[field_key];
+function  getStringRowFieldValue(row: csvRow, fieldKey: string): string {
+  const value = row[fieldKey];
   if (value === undefined) {
-    throw new Error(`Field key "${field_key}" not found for row: ${row}`);
+    throw new Error(`Field key "${fieldKey}" not found for row: ${row}`);
   }
   return value;
 }

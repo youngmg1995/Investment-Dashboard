@@ -8,7 +8,7 @@ const DEFAULT_CSV_CONFIG: ParseConfig = {
 
 type CsvCallback = (data: any[]) => any;
 
-export function parseCSVFile(csv_file: any, callback: CsvCallback): void {
+export function parseCSVFile(csvFile: any, callback: CsvCallback): void {
     const config: ParseConfig = {
         ...DEFAULT_CSV_CONFIG,
         complete: (results: ParseResult<any>) => {
@@ -16,5 +16,5 @@ export function parseCSVFile(csv_file: any, callback: CsvCallback): void {
         }
     }
     
-    Papa.parse(csv_file, config);
+    Papa.parse(csvFile, config);
 }

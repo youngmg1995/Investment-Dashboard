@@ -9,7 +9,7 @@
 
 import Portfolio, { Broker } from "../portfolio";
 import PortfolioParser from "./parser";
-import VanguardPortfolioParser from "./vanguard_parser";
+import VanguardPortfolioParser from "./vanguardParser";
 
 
 /* *********************************  ********************************* */
@@ -22,7 +22,7 @@ import VanguardPortfolioParser from "./vanguard_parser";
 /*                                PARAMS
 /* *********************************  ********************************* */
 
-const _BROKER_PARSERS = new Map<Broker, PortfolioParser>([
+const  BROKER_PARSERS = new Map<Broker, PortfolioParser>([
   [Broker.VANGUARD, new VanguardPortfolioParser()],
 ]);
 
@@ -37,7 +37,7 @@ export default function parsePortfolioFromFiles(
     throw new Error("Multi-file parsing is unsupported.");
   }
 
-  const parser = _BROKER_PARSERS.get(broker);
+  const parser =  BROKER_PARSERS.get(broker);
   if (parser === undefined) {
     throw new Error(`Unsupported Broker: ${broker}`)
   }
