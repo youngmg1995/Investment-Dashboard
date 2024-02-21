@@ -41,19 +41,11 @@ export enum TransactionType {
   BUY = "buy",
   SELL = "sell",
   DIVIDEND = "dividend",
+  CAPITAL_GAIN_ST = "capital_gain_st",
+  CAPITAL_GAIN_LT = "captial_gain_lt",
 }
 
-// export enum TransactionSubType {
-//   UNDEFINED = "undefined",
-//   DEPOSIT = "deposit",
-//   WITHDRAWAL = "withdrawal",
-//   BUY = "buy",
-//   SELL = "sell",
-//   DIVIDEND = "dividend",
-// }
-
 const  CASH_SYMBOL = "0000";
-export const MONEY_MARKET_SYMBOL = "0001";
 
 
 /* *********************************  ********************************* */
@@ -69,7 +61,7 @@ export default class Portfolio {
     this.transactionHistory = transactionHistory || [];
   }
 
-  deposit(time: Date, amount: number) {
+  public deposit(time: Date, amount: number) {
     const tradeDate = time;
     const settleDate = time;
     const symbol =  CASH_SYMBOL;
@@ -82,7 +74,7 @@ export default class Portfolio {
     );
   }
 
-  withdrawal(time: Date, amount: number) {
+  public withdrawal(time: Date, amount: number) {
     const tradeDate = time;
     const settleDate = time;
     const symbol =  CASH_SYMBOL;
@@ -95,7 +87,7 @@ export default class Portfolio {
     );
   }
 
-  buy(
+  public buy(
     tradeDate: Date,
     settleDate: Date,
     symbol: string,
@@ -116,7 +108,7 @@ export default class Portfolio {
     );
   }
 
-  sell(
+  public sell(
     tradeDate: Date,
     settleDate: Date,
     symbol: string,
@@ -137,7 +129,7 @@ export default class Portfolio {
     );
   }
 
-  dividend(
+  public dividend(
     time: Date,
     symbol: string,
     principal: number,
@@ -161,7 +153,55 @@ export default class Portfolio {
     this.deposit(time, amount); 
   }
 
-   addTranscation(t: Transaction) {
+  public capitalGainSt(
+    time: Date,
+    symbol: string,
+    principal: number,
+    commission: number,
+    net: number,
+  ) {
+    const tradeDate = time;
+    const settleDate = time;
+    const shares = net;
+    this.makeTransaction(
+      TransactionType.CAPITAL_GAIN_ST,
+      tradeDate,
+      settleDate,
+      symbol,
+      shares,
+      principal,
+      commission,
+      net,
+    );
+    const amount = net;
+    this.deposit(time, amount); 
+  }
+
+  public capitalGainLt(
+    time: Date,
+    symbol: string,
+    principal: number,
+    commission: number,
+    net: number,
+  ) {
+    const tradeDate = time;
+    const settleDate = time;
+    const shares = net;
+    this.makeTransaction(
+      TransactionType.CAPITAL_GAIN_LT,
+      tradeDate,
+      settleDate,
+      symbol,
+      shares,
+      principal,
+      commission,
+      net,
+    );
+    const amount = net;
+    this.deposit(time, amount); 
+  }
+
+  private addTranscation(t: Transaction) {
     this.transactionHistory.push(t);
   }
 

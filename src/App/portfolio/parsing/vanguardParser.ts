@@ -31,23 +31,28 @@ export default class VanguardPortfolioParser extends PortfolioParser {
   static  broker: Broker = Broker.VANGUARD;
 
   // Field keys for parsing.
-  protected  typeFieldKey: string = "Transaction Description";
-  protected  tradeDateFieldKey: string = "Trade Date";
-  protected  settleDateFieldKey: string = "Settlement Date";
+  protected  typeFieldKey: string = "Transaction type";
+  protected  tradeDateFieldKey: string = "Trade date";
+  protected  settleDateFieldKey: string = "Settlement date";
   protected  symbolFieldKey: string = "Symbol";
-  protected  sharesFieldKey: string = "Shares";
-  protected  principalFieldKey: string = "Principal Amount";
-  protected  commissionFieldKey: string = "Commission Fees";
-  protected  netFieldKey: string = "Net Amount";
+  protected  sharesFieldKey: string = "Quantity";
+  protected  principalFieldKey: string = "Amount";
+  protected  commissionFieldKey: string = "Commissions & fees";
 
   // Mappings for field values.
-   transactionTypeMapping: Map<string, TransactionType> = new Map<string, TransactionType>([
-    ["Dividend Received", TransactionType.DIVIDEND],
-    ["Dividend Reinvestment", TransactionType.BUY],
+  protected transactionTypeMapping: Map<string, TransactionType> = new Map<string, TransactionType>([
     ["Buy", TransactionType.BUY],
-    ["Sweep Out Of Settlement Fund", TransactionType.SELL],
-    ["Funds received via Electronic Bank Transfer", TransactionType.DEPOSIT],
-    ["Sweep Into Settlement Fund", TransactionType.BUY],
+    ["Sweep out", TransactionType.SELL],
+    ["Dividend", TransactionType.BUY],
+    ["Reinvestment", TransactionType.BUY],
+    ["Funds Received", TransactionType.DEPOSIT],
+    ["Funds Withrawn", TransactionType.WITHDRAWAL],
+    ["Sweep in", TransactionType.BUY],
+    ["Capital gain (LT)", TransactionType.CAPITAL_GAIN_LT],
+    ["Reinvestment (LT gain)", TransactionType.BUY],
+    ["Capital gain (ST)", TransactionType.CAPITAL_GAIN_ST],
+    ["Reinvestment (ST gain)", TransactionType.BUY],
+    ["Sell", TransactionType.SELL],
   ]);
 
   constructor() {
