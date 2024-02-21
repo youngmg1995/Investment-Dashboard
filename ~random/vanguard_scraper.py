@@ -71,8 +71,7 @@ def load_raw_file_text(filepath: str) -> str:
       if row % 4 == 1 and record_rows:
         records.append("\t".join(record_rows))
         record_rows = []
-      else:
-        record_rows.append(line.strip())
+      record_rows.append(line.strip())
   raw_text = "\n".join([headers]+records)
   return raw_text
 
