@@ -7,7 +7,8 @@
 /* *********************************  ********************************* */
 
 import Papa, {ParseConfig, ParseResult} from 'papaparse';
-import Portfolio, { Broker, TransactionType } from '../portfolio';
+import Portfolio, { Broker } from '../portfolio';
+import { TransactionType } from '../transaction';
 
 
 /* *********************************  ********************************* */

@@ -11,6 +11,8 @@
 /*                                IMPORTS
 /* *********************************  ********************************* */
 
+import Transaction, { TransactionType, createTransaction } from "./transaction";
+
 
 /* *********************************  ********************************* */
 /*                                 TYPES
@@ -23,29 +25,12 @@ export enum Broker {
   ROBINHOOD = "robinhood",
 }
 
-interface Transaction {
-  type: TransactionType;
-  tradeDate: Date;
-  settleDate: Date;
-  symbol: string;
-  shares: number;
-  principal: number;
-  commission: number;
-  net: number;
-}
 
-export enum TransactionType {
-  UNDEFINED = "undefined",
-  DEPOSIT = "deposit",
-  WITHDRAWAL = "withdrawal",
-  BUY = "buy",
-  SELL = "sell",
-  DIVIDEND = "dividend",
-  CAPITAL_GAIN_ST = "capital_gain_st",
-  CAPITAL_GAIN_LT = "captial_gain_lt",
-}
+/* *********************************  ********************************* */
+/*                                PARAMS
+/* *********************************  ********************************* */
 
-const  CASH_SYMBOL = "0000";
+const CASH_SYMBOL = "0000";
 
 
 /* *********************************  ********************************* */
@@ -53,8 +38,9 @@ const  CASH_SYMBOL = "0000";
 /* *********************************  ********************************* */
 
 export default class Portfolio {
-  private  broker: Broker;
-  private  transactionHistory: Transaction[];
+  private broker: Broker;
+  private transactionHistory: Transaction[];
+
 
   constructor(broker: Broker, transactionHistory?: Transaction[]) {
     this.broker = broker;
@@ -64,10 +50,10 @@ export default class Portfolio {
   public deposit(time: Date, amount: number) {
     const tradeDate = time;
     const settleDate = time;
-    const symbol =  CASH_SYMBOL;
+    const symbol = CASH_SYMBOL;
     const shares = amount;
     const principal = amount;
-    const commission = 0.00; 
+    const commission = 0.00;
     const net = amount;
     this.buy(
       tradeDate, settleDate, symbol, shares, principal, commission, net
@@ -77,10 +63,10 @@ export default class Portfolio {
   public withdrawal(time: Date, amount: number) {
     const tradeDate = time;
     const settleDate = time;
-    const symbol =  CASH_SYMBOL;
+    const symbol = CASH_SYMBOL;
     const shares = amount;
     const principal = amount;
-    const commission = 0.00; 
+    const commission = 0.00;
     const net = amount;
     this.sell(
       tradeDate, settleDate, symbol, shares, principal, commission, net
@@ -150,7 +136,7 @@ export default class Portfolio {
       net,
     );
     const amount = net;
-    this.deposit(time, amount); 
+    this.deposit(time, amount);
   }
 
   public capitalGainSt(
@@ -174,7 +160,7 @@ export default class Portfolio {
       net,
     );
     const amount = net;
-    this.deposit(time, amount); 
+    this.deposit(time, amount);
   }
 
   public capitalGainLt(
@@ -198,14 +184,14 @@ export default class Portfolio {
       net,
     );
     const amount = net;
-    this.deposit(time, amount); 
+    this.deposit(time, amount);
   }
 
   private addTranscation(t: Transaction) {
     this.transactionHistory.push(t);
   }
 
-  private  makeTransaction(
+  private makeTransaction(
     type: TransactionType,
     tradeDate: Date,
     settleDate: Date,
@@ -215,7 +201,7 @@ export default class Portfolio {
     commission: number,
     net: number,
   ) {
-    const t =  createTransaction(
+    const t = createTransaction(
       type,
       tradeDate,
       settleDate,
@@ -225,7 +211,7 @@ export default class Portfolio {
       commission,
       net,
     );
-    this.addTranscation(t); 
+    this.addTranscation(t);
   };
 }
 
@@ -233,25 +219,4 @@ export default class Portfolio {
 /*                                HELPERS
 /* *********************************  ********************************* */
 
-function  createTransaction(
-  type: TransactionType,
-  tradeDate: Date,
-  settleDate: Date,
-  symbol: string,
-  shares: number,
-  principal: number,
-  commission: number,
-  net: number,
-): Transaction {
-  return {
-    type,
-    tradeDate: tradeDate,
-    settleDate: settleDate,
-    symbol,
-    shares,
-    principal,
-    commission,
-    net,
-  } as Transaction;
-}
 

@@ -13,7 +13,8 @@ import PortfolioParser from "./parser";
 /*                                 TYPES
 /* *********************************  ********************************* */
 
-import { Broker, TransactionType } from '../portfolio';
+import { Broker } from '../portfolio';
+import { TransactionType } from "../transaction";
 
 
 /* *********************************  ********************************* */
