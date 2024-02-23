@@ -100,8 +100,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
     setOpen(!open);
   };
 
-  console.log(props.portfolio);
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <Box sx={{ display: 'flex' }}>

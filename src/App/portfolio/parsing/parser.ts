@@ -43,7 +43,7 @@ export default abstract class PortfolioParser {
   protected abstract  commissionFieldKey: string;
 
   // Mappings for field values.
-  protected abstract  transactionTypeMapping: Map<string, TransactionType>;
+  protected abstract  transactionTypeMapping: {[key: string]: TransactionType};
 
   constructor(broker: Broker) {
     this.broker = broker;
@@ -53,6 +53,7 @@ export default abstract class PortfolioParser {
   public async portfolioFromFile(f: File): Promise<Portfolio> {
     const csvData = await  parseCSVFile(f);
     this.parseCsvData(csvData);
+    this.portfolio.update();
     return this.portfolio;
   }
 
@@ -102,14 +103,14 @@ export default abstract class PortfolioParser {
   private makeDeposit(row: csvRow): void {
     this.portfolio.deposit(
       this.parseTradeDate(row),
-      this.parseNet(row),
+      this.parsePrincipal(row),
     );
   };
 
   private makeWithrawal(row: csvRow): void {
     this.portfolio.withdrawal(
       this.parseTradeDate(row),
-      this.parseNet(row),
+      this.parsePrincipal(row),
     );
   };
 
@@ -121,7 +122,6 @@ export default abstract class PortfolioParser {
       this.parseShares(row),
       this.parsePrincipal(row),
       this.parseCommission(row),
-      this.parseNet(row),
     );
   };
 
@@ -133,7 +133,6 @@ export default abstract class PortfolioParser {
       this.parseShares(row),
       this.parsePrincipal(row),
       this.parseCommission(row),
-      this.parseNet(row),
     );
   };
 
@@ -143,7 +142,6 @@ export default abstract class PortfolioParser {
       this.parseSymbol(row),
       this.parsePrincipal(row),
       this.parseCommission(row),
-      this.parseNet(row),
     );
   };
 
@@ -153,7 +151,6 @@ export default abstract class PortfolioParser {
       this.parseSymbol(row),
       this.parsePrincipal(row),
       this.parseCommission(row),
-      this.parseNet(row),
     );
   };
 
@@ -163,17 +160,15 @@ export default abstract class PortfolioParser {
       this.parseSymbol(row),
       this.parsePrincipal(row),
       this.parseCommission(row),
-      this.parseNet(row),
     );
   };
 
   private parseTransactionType(row: csvRow): TransactionType {
     const value =  getStringRowFieldValue(row, this.typeFieldKey);
-    const t = this.transactionTypeMapping.get(value);
-    if (t === undefined) {
+    if (!(value in this.transactionTypeMapping)) {
       throw new Error(`Invalid ${this.broker} TransactionType value: ${value}`);
     }
-    return t;
+    return this.transactionTypeMapping[value];
   };
 
   private parseTradeDate(row: csvRow): Date {
@@ -189,19 +184,15 @@ export default abstract class PortfolioParser {
   }
 
   private parseShares(row: csvRow): number {
-    return  getNumericRowFieldValue(row, this.sharesFieldKey);
+    return  getFloatRowFieldValue(row, this.sharesFieldKey);
   }
 
   private parsePrincipal(row: csvRow): number {
-    return  getNumericRowFieldValue(row, this.principalFieldKey);
+    return  getFloatRowFieldValue(row, this.principalFieldKey);
   }
 
   private parseCommission(row: csvRow): number {
-    return  getNumericRowFieldValue(row, this.commissionFieldKey);
-  }
-
-  private parseNet(row: csvRow): number {
-    return  this.parsePrincipal(row) - this.parseCommission(row);
+    return  getFloatRowFieldValue(row, this.commissionFieldKey);
   }
 }
 
@@ -228,9 +219,9 @@ function  getDateRowFieldValue(row: csvRow, fieldKey: string): Date {
   return new Date(value);
 }
 
-function  getNumericRowFieldValue(row: csvRow, fieldKey: string): number {
-  const value =  getStringRowFieldValue(row, fieldKey);
-  return Math.abs(Number(value));
+function  getFloatRowFieldValue(row: csvRow, fieldKey: string): number {
+  const value =  getStringRowFieldValue(row, fieldKey).replace(/,/g, '');
+  return Math.abs(parseFloat(value));
 }
 
 function  getStringRowFieldValue(row: csvRow, fieldKey: string): string {

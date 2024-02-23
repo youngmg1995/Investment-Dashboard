@@ -41,6 +41,5 @@ export default function parsePortfolioFromFiles(
   if (parser === undefined) {
     throw new Error(`Unsupported Broker: ${broker}`)
   }
-  console.log(broker);
   return parser.portfolioFromFile(files[0]);
 }

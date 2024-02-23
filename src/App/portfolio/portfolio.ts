@@ -11,7 +11,10 @@
 /*                                IMPORTS
 /* *********************************  ********************************* */
 
-import Transaction, { TransactionType, createTransaction } from "./transaction";
+import Holding from "./holding";
+import Transaction, { 
+  TransactionHistory, TransactionType, createTransaction 
+} from "./transaction";
 
 
 /* *********************************  ********************************* */
@@ -39,12 +42,56 @@ const CASH_SYMBOL = "0000";
 
 export default class Portfolio {
   private broker: Broker;
-  private transactionHistory: Transaction[];
+  private alwaysUpdate: boolean;
+  private transactionHistory: TransactionHistory;
+  private holdings: {[symbol: string]: Holding};
 
-
-  constructor(broker: Broker, transactionHistory?: Transaction[]) {
+  constructor(broker: Broker, alwaysUpdate: boolean = false) {
     this.broker = broker;
-    this.transactionHistory = transactionHistory || [];
+    this.alwaysUpdate = alwaysUpdate;
+    this.transactionHistory = new TransactionHistory();
+    this.holdings = {};
+  }
+
+  public value() {
+    this.update();
+    let value = 0;
+    for (let s in this.holdings) {
+      value += this.holdings[s].value();
+    }
+    return value;
+  }
+
+  public update(): void {
+    if (this.isCurrent()) return;
+    this.transactionHistory.sort();
+    this.updateHoldings();
+  }
+
+  private updateHoldings(): void {
+    this.holdings = {};
+    for (let t of this.transactionHistory) {
+      this.updateHolding(t);
+    }
+    for (let s in this.holdings) {
+      this.holdings[s].updateSharePrice();
+    }
+  }
+
+  private updateHolding(t: Transaction): void {
+    if (!(t.symbol in this.holdings)) {
+      this.holdings[t.symbol] = new Holding();
+    }
+    this.holdings[t.symbol].update(t);
+  }
+
+  public isCurrent(): boolean {
+    if (!this.transactionHistory.sorted()) return false;
+    // for (let s in this.holdings) {
+    //   const h = this.holdings[s];
+    //   if (!h.isCurrent()) return false;
+    // }
+    return true;
   }
 
   public deposit(time: Date, amount: number) {
@@ -54,9 +101,8 @@ export default class Portfolio {
     const shares = amount;
     const principal = amount;
     const commission = 0.00;
-    const net = amount;
     this.buy(
-      tradeDate, settleDate, symbol, shares, principal, commission, net
+      tradeDate, settleDate, symbol, shares, principal, commission
     );
   }
 
@@ -67,9 +113,8 @@ export default class Portfolio {
     const shares = amount;
     const principal = amount;
     const commission = 0.00;
-    const net = amount;
     this.sell(
-      tradeDate, settleDate, symbol, shares, principal, commission, net
+      tradeDate, settleDate, symbol, shares, principal, commission
     );
   }
 
@@ -80,8 +125,8 @@ export default class Portfolio {
     shares: number,
     principal: number,
     commission: number,
-    net: number,
   ) {
+    shares = shares || principal;
     this.makeTransaction(
       TransactionType.BUY,
       tradeDate,
@@ -90,7 +135,6 @@ export default class Portfolio {
       shares,
       principal,
       commission,
-      net,
     );
   }
 
@@ -101,8 +145,8 @@ export default class Portfolio {
     shares: number,
     principal: number,
     commission: number,
-    net: number,
   ) {
+    shares = shares || principal;
     this.makeTransaction(
       TransactionType.SELL,
       tradeDate,
@@ -111,7 +155,6 @@ export default class Portfolio {
       shares,
       principal,
       commission,
-      net,
     );
   }
 
@@ -120,11 +163,10 @@ export default class Portfolio {
     symbol: string,
     principal: number,
     commission: number,
-    net: number,
   ) {
     const tradeDate = time;
     const settleDate = time;
-    const shares = net;
+    const shares = 0;
     this.makeTransaction(
       TransactionType.DIVIDEND,
       tradeDate,
@@ -133,9 +175,8 @@ export default class Portfolio {
       shares,
       principal,
       commission,
-      net,
     );
-    const amount = net;
+    const amount = principal - commission;
     this.deposit(time, amount);
   }
 
@@ -144,11 +185,10 @@ export default class Portfolio {
     symbol: string,
     principal: number,
     commission: number,
-    net: number,
   ) {
     const tradeDate = time;
     const settleDate = time;
-    const shares = net;
+    const shares = 0;
     this.makeTransaction(
       TransactionType.CAPITAL_GAIN_ST,
       tradeDate,
@@ -157,9 +197,8 @@ export default class Portfolio {
       shares,
       principal,
       commission,
-      net,
     );
-    const amount = net;
+    const amount = principal - commission;
     this.deposit(time, amount);
   }
 
@@ -168,11 +207,10 @@ export default class Portfolio {
     symbol: string,
     principal: number,
     commission: number,
-    net: number,
   ) {
     const tradeDate = time;
     const settleDate = time;
-    const shares = net;
+    const shares = 0;
     this.makeTransaction(
       TransactionType.CAPITAL_GAIN_LT,
       tradeDate,
@@ -181,14 +219,9 @@ export default class Portfolio {
       shares,
       principal,
       commission,
-      net,
     );
-    const amount = net;
+    const amount = principal - commission;
     this.deposit(time, amount);
-  }
-
-  private addTranscation(t: Transaction) {
-    this.transactionHistory.push(t);
   }
 
   private makeTransaction(
@@ -199,7 +232,6 @@ export default class Portfolio {
     shares: number,
     principal: number,
     commission: number,
-    net: number,
   ) {
     const t = createTransaction(
       type,
@@ -209,10 +241,16 @@ export default class Portfolio {
       shares,
       principal,
       commission,
-      net,
     );
     this.addTranscation(t);
   };
+
+  private addTranscation(t: Transaction) {
+    this.transactionHistory.push(t);
+    if (this.alwaysUpdate && this.isCurrent()) {
+      this.updateHolding(t);
+    }
+  }
 }
 
 /* *********************************  ********************************* */

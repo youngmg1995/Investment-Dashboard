@@ -8,6 +8,7 @@ const App: React.FC = () => {
   // State
   const [portfolio, setPortfolio] = React.useState<Portfolio>();
   console.log(portfolio);
+  console.log(portfolio?.value());
 
   const uploadPortfolioFromFiles = async (files: FileList) => {
     const portfolio = await parsePortfolioFromFiles(files)
