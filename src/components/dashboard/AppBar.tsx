@@ -74,7 +74,7 @@ const AppBar: React.FC<AppBarProps> = (props) => {
   };
 
   return (
-    <>
+    <React.Fragment>
       <StyledMuiAppBar position="absolute" open={open}>
         <Toolbar
           sx={{
@@ -129,7 +129,7 @@ const AppBar: React.FC<AppBarProps> = (props) => {
           {secondaryListItems}
         </List>
       </Drawer>
-    </>
+    </React.Fragment>
   );
 }
 
