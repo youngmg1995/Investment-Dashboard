@@ -12,7 +12,7 @@ import Chart from './Chart';
 import Deposits from './Deposits';
 import Orders from './Orders';
 
-import Portfolio from '../portfolio';
+import Portfolio from '../../portfolio';
 import AppBar from './AppBar';
 
 function Copyright(props: any) {

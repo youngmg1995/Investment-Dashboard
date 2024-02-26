@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Portfolio, { parsePortfolioFromFiles } from './portfolio';
+import Portfolio, { parsePortfolioFromFiles } from '../portfolio';
 import Dashboard from './dashboard';
 import FileUploader from './FileUploader';
 
