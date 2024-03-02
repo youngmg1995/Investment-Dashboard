@@ -3,30 +3,17 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
 import Chart from './Chart';
 import Orders from './Orders';
 
 import Portfolio from '../../portfolio';
 import AppBar from './AppBar';
+import Copyright from './Copyright';
+import { PieChart, PieDatum } from '../charts';
 import SummaryKpi from './SummaryKpi';
-
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -36,6 +23,16 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
+
+  let mixChartData: PieDatum[] = [];
+  const holdings = props.portfolio.getHoldings()
+  for (let s in holdings) {
+    const h = holdings[s];
+    mixChartData.push({
+      key: s,
+      value: h.value(),
+    })
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -72,6 +69,19 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                   <SummaryKpi
                     value={12345} investedFunds={10000} returns={2345} avgApr={.126573564}
                   />
+                </Paper>
+              </Grid>
+              {/* Chart */}
+              <Grid item xs={12} md={8} lg={9}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 240,
+                  }}
+                >
+                  <PieChart data={mixChartData} width={200} height={200}/>
                 </Paper>
               </Grid>
               {/* Chart */}

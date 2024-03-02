@@ -53,7 +53,11 @@ export default class Portfolio {
     this.holdings = {};
   }
 
-  public value() {
+  public getHoldings(): {[symbol: string]: Holding} {
+    return this.holdings;
+  }
+
+  public value(): number {
     this.update();
     let value = 0;
     for (let s in this.holdings) {
@@ -80,7 +84,7 @@ export default class Portfolio {
 
   private updateHolding(t: Transaction): void {
     if (!(t.symbol in this.holdings)) {
-      this.holdings[t.symbol] = new Holding();
+      this.holdings[t.symbol] = new Holding(t.symbol);
     }
     this.holdings[t.symbol].update(t);
   }

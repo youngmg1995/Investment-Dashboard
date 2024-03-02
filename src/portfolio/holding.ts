@@ -39,13 +39,17 @@ const TOLERANCE = .00001;
 /* *********************************  ********************************* */
 
 export default class Holding {
+  private symbol: string;
   private costBasis: CostBasis;
   private pricePerShare: number;
 
-  constructor() {
+  constructor(symbol: string) {
+    this.symbol = symbol;
     this.costBasis = new CostBasis();
     this.pricePerShare = this.sharePrice(true);
   }
+
+  public getSymbol(): string {return this.symbol;}
 
   public shares(): number {
     return this.costBasis.shares();
