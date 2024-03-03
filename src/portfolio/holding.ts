@@ -7,6 +7,7 @@
 /*                                IMPORTS
 /* *********************************  ********************************* */
 
+import { HoldingInfo, HoldingType, fetchHoldingInfo } from "./marketData";
 import Transaction, { TransactionType } from "./transaction";
 
 
@@ -39,17 +40,19 @@ const TOLERANCE = .00001;
 /* *********************************  ********************************* */
 
 export default class Holding {
-  private symbol: string;
+  private info: HoldingInfo;
   private costBasis: CostBasis;
   private pricePerShare: number;
 
   constructor(symbol: string) {
-    this.symbol = symbol;
+    this.info = fetchHoldingInfo(symbol);
     this.costBasis = new CostBasis();
     this.pricePerShare = this.sharePrice(true);
   }
 
-  public getSymbol(): string {return this.symbol;}
+  public getSymbol(): string {return this.info.symbol;}
+  public getName(): string {return this.info.name;}
+  public getType(): HoldingType {return this.info.type;}
 
   public shares(): number {
     return this.costBasis.shares();
@@ -136,7 +139,7 @@ class CostBasis {
   private popOldest(): CostBasisItem {
     let oldest = this.items.pop();
     if (oldest === undefined) {
-      throw Error("Attempting to pop item from empty CostBasis.")
+      throw new Error("Attempting to pop item from empty CostBasis.")
     }
     return oldest;
   }
@@ -158,7 +161,7 @@ class CostBasis {
     if (accountingMethod === CostBasisMethod.FIFO){
       this.removeFIFO(shares);
     } else {
-      throw Error(`Unsupported CostBasisMethod: ${accountingMethod}`);
+      throw new Error(`Unsupported CostBasisMethod: ${accountingMethod}`);
     }
   }
 

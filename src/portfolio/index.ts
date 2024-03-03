@@ -13,6 +13,7 @@
 
 import Portfolio from "./portfolio";
 import parsePortfolioFromFiles from "./parsing";
+import Holding from "./holding";
 
 
 /* *********************************  ********************************* */
@@ -32,4 +33,4 @@ import parsePortfolioFromFiles from "./parsing";
 /* *********************************  ********************************* */
 
 export default Portfolio;
-export { parsePortfolioFromFiles };
+export { parsePortfolioFromFiles, Holding };

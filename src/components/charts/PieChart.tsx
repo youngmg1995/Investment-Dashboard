@@ -14,7 +14,7 @@ import { Group } from '@visx/group';
 import { GradientPinkBlue } from '@visx/gradient';
 import letterFrequency, { LetterFrequency } from '@visx/mock-data/lib/mocks/letterFrequency';
 import { animated, useTransition, to } from '@react-spring/web';
-import { Annotation, Label, Connector, CircleSubject } from "@visx/annotation";
+import { Annotation, Label, Connector } from "@visx/annotation";
 
 
 /* *********************************  ********************************* */
