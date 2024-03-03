@@ -14,24 +14,55 @@ import { Group } from '@visx/group';
 import { GradientPinkBlue } from '@visx/gradient';
 import letterFrequency, { LetterFrequency } from '@visx/mock-data/lib/mocks/letterFrequency';
 import { animated, useTransition, to } from '@react-spring/web';
+import { Annotation, Label, Connector, CircleSubject } from "@visx/annotation";
 
 
 /* *********************************  ********************************* */
 /*                                 TYPES
 /* *********************************  ********************************* */
 
-export interface PieDatum {
+export interface PieInputDatum {
   key: string,
+  label: string,
   value: number,
+  subData?: PieInputDatum[],
+}
+
+interface PieDatum {
+  key: string,
+  label: string,
+  value: number,
+  ratio: number,
+  color: string,
+  subData?: PieDatum[],
 }
 
 export interface PieChartProps {
   // portfolioMix: {[key: string]: number};
-  data: PieDatum[];
+  data: PieInputDatum[];
   width: number;
   height: number;
   margin?: typeof defaultMargin;
   animate?: boolean;
+};
+
+type AnimatedPieProps<Datum> = ProvidedProps<Datum> & {
+  animate?: boolean;
+  getKey: (d: PieArcDatum<Datum>) => string;
+  getLabel: (d: PieArcDatum<Datum>) => string;
+  getPercent: (d: PieArcDatum<Datum>) => string;
+  getColor: (d: PieArcDatum<Datum>) => string;
+  onClickDatum: (d: PieArcDatum<Datum>) => void;
+  delay?: number;
+  width: number;
+  height: number;
+};
+
+// react-spring transition definitions
+type AnimatedStyles = {
+  startAngle: number;
+  endAngle: number;
+  opacity: number
 };
 
 
@@ -49,24 +80,22 @@ const DEFAULT_COLORS = [
   'rgba(255,255,255,0.1)',
 ];
 
+// const defaultMargin = { top: 20, right: 20, bottom: 20, left: 20 };
 
-/* *********************************  ********************************* */
-/*                                EXPORTS
-/* *********************************  ********************************* */
+const defaultMargin = { top: 100, right: 200, bottom: 100, left: 200 };
+
 
 const letters: LetterFrequency[] = letterFrequency.slice(0, 4);
 const frequency = (d: LetterFrequency) => d.frequency;
-
-const getItemColor = (i: number) => {
-  const index = Math.floor(i) % DEFAULT_COLORS.length;
-  return DEFAULT_COLORS[index];
-}
 const getLetterFrequencyColor = scaleOrdinal({
   domain: letters.map((l) => l.letter),
   range: ['rgba(93,30,91,1)', 'rgba(93,30,91,0.8)', 'rgba(93,30,91,0.6)', 'rgba(93,30,91,0.4)'],
 });
 
-const defaultMargin = { top: 20, right: 20, bottom: 20, left: 20 };
+
+/* *********************************  ********************************* */
+/*                                EXPORTS
+/* *********************************  ********************************* */
 
 const PieChart: React.FC<PieChartProps> = ({
   data,
@@ -75,6 +104,7 @@ const PieChart: React.FC<PieChartProps> = ({
   margin = defaultMargin,
   animate = true,
 }) => {
+  const pieData = convert2PieData(data);
   const [selectedDatum, setSelectedDatum] = useState<PieDatum | null>(null);
   const [selectedAlphabetLetter, setSelectedAlphabetLetter] = useState<string | null>(null);
 
@@ -93,10 +123,7 @@ const PieChart: React.FC<PieChartProps> = ({
       <rect rx={14} width={width} height={height} fill="url('#visx-pie-gradient')" />
       <Group top={centerY + margin.top} left={centerX + margin.left}>
         <Pie
-          // data={
-          //   selectedBrowser ? browsers.filter(({ label }) => label === selectedBrowser) : browsers
-          // }
-          data={selectedDatum ? [selectedDatum] : data}
+          data={selectedDatum ? [selectedDatum]: pieData}
           pieValue={getPieDatumValue}
           outerRadius={radius}
           innerRadius={radius - donutThickness}
@@ -108,15 +135,19 @@ const PieChart: React.FC<PieChartProps> = ({
               {...pie}
               animate={animate}
               getKey={(arc) => getPieDatumKey(arc.data)}
+              getLabel={(arc) => getPieDatumLabel(arc.data)}
+              getPercent={(arc) => getPieDatumPercent(arc.data)}
               onClickDatum={({ data: d }) =>
                 animate && 
                 setSelectedDatum(d && selectedDatum === d ? null : d)
               }
-              getColor={({ index: i }) => getItemColor(i)}
+              getColor={(arc) => getPieDatumColor(arc.data)}
+              width={width}
+              height={height}
             />
           )}
         </Pie>
-        <Pie
+        {/* <Pie
           data={
             selectedAlphabetLetter
               ? letters.filter(({ letter }) => letter === selectedAlphabetLetter)
@@ -131,6 +162,7 @@ const PieChart: React.FC<PieChartProps> = ({
               {...pie}
               animate={animate}
               getKey={({ data: { letter } }) => letter}
+              getLabel={({ data: { letter } }) => letter}
               onClickDatum={({ data: { letter } }) =>
                 animate &&
                 setSelectedAlphabetLetter(
@@ -138,9 +170,11 @@ const PieChart: React.FC<PieChartProps> = ({
                 )
               }
               getColor={({ data: { letter } }) => getLetterFrequencyColor(letter)}
+              width={width}
+              height={height}
             />
           )}
-        </Pie>
+        </Pie> */}
       </Group>
     </svg>
   );
@@ -148,8 +182,45 @@ const PieChart: React.FC<PieChartProps> = ({
 
 export default PieChart;
 
-// react-spring transition definitions
-type AnimatedStyles = { startAngle: number; endAngle: number; opacity: number };
+/* *********************************  ********************************* */
+/*                                HELPERS
+/* *********************************  ********************************* */
+
+const getPieDatumKey = (d: PieDatum): string => (d.key);
+const getPieDatumLabel = (d: PieDatum): string => (d.label);
+const getPieDatumValue = (d: PieDatum): number => (d.value);
+const getPieDatumColor = (d: PieDatum): string => (d.color);
+const getPieDatumPercent = (d: PieDatum): string => {
+  return `${(d.ratio*100).toFixed(1)}%`
+};
+
+
+const getItemColor = (i: number) => {
+  const index = Math.floor(i) % DEFAULT_COLORS.length;
+  console.log("i", i);
+  console.log("index", index);
+  return DEFAULT_COLORS[index];
+}
+
+const convert2PieData = (inputData: PieInputDatum[]): PieDatum[] => {
+  let data = [];
+  let total = 0;
+  for (let i of inputData) {
+    data.push({
+      key: i.key,
+      label: i.label,
+      value: i.value,
+      subData: i.subData ? convert2PieData(i.subData) : undefined,
+    });
+    total += i.value;
+  }
+  data.sort((a, b) => (b.value - a.value));
+  return data.map((d, i) => Object.assign({}, d, {
+    color: getItemColor(i),
+    ratio: d.value / total,
+  }));
+}
+
 
 const fromLeaveTransition = ({ endAngle }: PieArcDatum<any>) => ({
   // enter from 360° if end angle is > 180°
@@ -163,29 +234,29 @@ const enterUpdateTransition = ({ startAngle, endAngle }: PieArcDatum<any>) => ({
   opacity: 1,
 });
 
-type AnimatedPieProps<Datum> = ProvidedProps<Datum> & {
-  animate?: boolean;
-  getKey: (d: PieArcDatum<Datum>) => string;
-  getColor: (d: PieArcDatum<Datum>) => string;
-  onClickDatum: (d: PieArcDatum<Datum>) => void;
-  delay?: number;
-};
-
 function AnimatedPie<Datum>({
   animate,
   arcs,
   path,
   getKey,
+  getLabel,
+  getPercent,
   getColor,
   onClickDatum,
+  width,
+  height
 }: AnimatedPieProps<Datum>) {
-  const transitions = useTransition<PieArcDatum<Datum>, AnimatedStyles>(arcs, {
-    from: animate ? fromLeaveTransition : enterUpdateTransition,
-    enter: enterUpdateTransition,
-    update: enterUpdateTransition,
-    leave: animate ? fromLeaveTransition : enterUpdateTransition,
-    keys: getKey,
-  });
+  const transitions = useTransition<PieArcDatum<Datum>, AnimatedStyles>(
+    arcs,
+    {
+      from: animate ? fromLeaveTransition : enterUpdateTransition,
+      enter: enterUpdateTransition,
+      update: enterUpdateTransition,
+      leave: animate ? fromLeaveTransition : enterUpdateTransition,
+    }
+  );
+  const targetLabelOffset = (width / 2) * 0.6;
+  console.log(arcs);
   return transitions((props, arc, { key }) => {
     const [centroidX, centroidY] = path.centroid(arc);
     const hasSpaceForLabel = arc.endAngle - arc.startAngle >= 0.1;
@@ -194,12 +265,14 @@ function AnimatedPie<Datum>({
       <g key={key}>
         <animated.path
           // compute interpolated path d attribute from intermediate angle values
-          d={to([props.startAngle, props.endAngle], (startAngle, endAngle) =>
-            path({
-              ...arc,
-              startAngle,
-              endAngle,
-            }),
+          d={to(
+            [props.startAngle, props.endAngle],
+            (startAngle, endAngle) =>
+              path({
+                ...arc,
+                startAngle,
+                endAngle
+              })
           )}
           fill={getColor(arc)}
           onClick={() => onClickDatum(arc)}
@@ -212,23 +285,47 @@ function AnimatedPie<Datum>({
               x={centroidX}
               y={centroidY}
               dy=".33em"
-              fontSize={9}
+              fontSize={10}
               textAnchor="middle"
               pointerEvents="none"
             >
-              {getKey(arc)}
+              {getPercent(arc)}
             </text>
+            <Annotation
+              x={centroidX}
+              y={centroidY}
+              dx={
+                // offset label to a constant left- or right-coordinate
+                (centroidX < 0 ? -targetLabelOffset : targetLabelOffset) -
+                centroidX
+              }
+              dy={centroidY < 0 ? -50 : 50}
+            >
+              <Label
+                showAnchorLine
+                anchorLineStroke="#eaeaea"
+                showBackground={false}
+                title={getLabel(arc)}
+                // subtitle={`${arc.value.toFixed(1)}%`}
+                subtitle={arc.value.toLocaleString(undefined, {maximumFractionDigits:0})}
+                fontColor="#fff"
+                width={100}
+                // these will work in @visx/annotation@1.4
+                // see https://github.com/airbnb/visx/pull/989
+                horizontalAnchor={centroidX < 0 ? 'end' : 'start'}
+                backgroundPadding={{
+                  left: 8,
+                  right: 8,
+                  top: 0,
+                  bottom: 0
+                }}
+              />
+              <Connector stroke="#fff" />
+            </Annotation>
           </animated.g>
         )}
       </g>
     );
   });
 }
-
-/* *********************************  ********************************* */
-/*                                HELPERS
-/* *********************************  ********************************* */
-
-const getPieDatumKey = (d: PieDatum) => (d.key);
-const getPieDatumValue = (d: PieDatum) => (d.value);
 

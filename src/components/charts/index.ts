@@ -1,3 +1,3 @@
-import PieChart, { PieDatum, PieChartProps } from "./PieChart";
+import PieChart, { PieInputDatum, PieChartProps } from "./PieChart";
 
-export { PieChart, type PieDatum, type PieChartProps };
+export { PieChart, type PieInputDatum, type PieChartProps };

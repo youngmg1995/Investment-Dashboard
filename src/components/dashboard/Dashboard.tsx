@@ -12,7 +12,7 @@ import Orders from './Orders';
 import Portfolio from '../../portfolio';
 import AppBar from './AppBar';
 import Copyright from './Copyright';
-import { PieChart, PieDatum } from '../charts';
+import { PieChart, PieInputDatum } from '../charts';
 import SummaryKpi from './SummaryKpi';
 
 // TODO remove, this demo shouldn't need to reset the theme.
@@ -24,12 +24,13 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
 
-  let mixChartData: PieDatum[] = [];
+  let mixChartData: PieInputDatum[] = [];
   const holdings = props.portfolio.getHoldings()
   for (let s in holdings) {
     const h = holdings[s];
     mixChartData.push({
       key: s,
+      label: s,
       value: h.value(),
     })
   }
@@ -73,16 +74,16 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
               </Grid>
               {/* Chart */}
               <Grid item xs={12} md={8} lg={9}>
-                <Paper
+                {/* <Paper
                   sx={{
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    height: 240,
+                    height: 500,
                   }}
-                >
-                  <PieChart data={mixChartData} width={200} height={200}/>
-                </Paper>
+                > */}
+                  <PieChart data={mixChartData} width={800} height={500}/>
+                {/* </Paper> */}
               </Grid>
               {/* Chart */}
               <Grid item xs={12} md={8} lg={9}>
