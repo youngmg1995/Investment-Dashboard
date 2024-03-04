@@ -68,7 +68,7 @@ const PortfolioMixPie: React.FC<PortfolioMixPieProps> = (props) => {
   let mixChartData: PieData = {
     rings: [groupingsRing, holdingsRing],
     sorted: true,
-    showRoot: false,
+    annotate: false,
   }
   
   return (
