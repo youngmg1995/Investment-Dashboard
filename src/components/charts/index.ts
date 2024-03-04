@@ -1,3 +1,3 @@
-import PieChart, { PieInputDatum, PieChartProps } from "./PieChart";
+import PieChart, { PieData, RingData, SegmentData, SegmentComparator } from "./PieChart";
 
-export { PieChart, type PieInputDatum, type PieChartProps };
+export { PieChart, type PieData, type RingData, type SegmentData, type SegmentComparator };

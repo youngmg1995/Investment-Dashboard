@@ -10,7 +10,7 @@
 import React, {useState} from 'react';
 
 import Portfolio, { Holding } from '../../portfolio';
-import { PieChart, PieInputDatum } from '../charts';
+import { PieChart, PieData, RingData, SegmentData } from '../charts';
 
 
 /* *********************************  ********************************* */
@@ -40,23 +40,35 @@ const PortfolioMixPie: React.FC<PortfolioMixPieProps> = (props) => {
   const [mixType, setMixType] = useState<MixType>(MixType.HOLDING_TYPE);
   
   const holdings = props.portfolio.getHoldings()
-  let mixChartGroupData: {[key: string]: PieInputDatum} = {};
+  let groupingsRingTable: {[key: string]: SegmentData} = {};
+  let holdingsRing: RingData = {segments: []};
   for (let s in holdings) {
     const h = holdings[s];
     const grouping = getHoldingGrouping(h, mixType);
-    if (grouping in mixChartGroupData) {
-      mixChartGroupData[grouping].value += h.value();
+    if (grouping in groupingsRingTable) {
+      groupingsRingTable[grouping].value += h.value();
     } else {
-      mixChartGroupData[grouping] = {
+      groupingsRingTable[grouping] = {
         key: grouping,
         label: grouping,
         value: h.value(),
       }
     }
+    holdingsRing.segments.push({
+      key: h.getSymbol(),
+      label: h.getSymbol(),
+      name: h.getName(),
+      value: h.value(),
+    })
   }
-  let mixChartData: PieInputDatum[] = [];
-  for (let k in mixChartGroupData) {
-    mixChartData.push(mixChartGroupData[k]);
+  const groupingsRing: RingData = {segments: []};
+  for (let k in groupingsRingTable) {
+    groupingsRing.segments.push(groupingsRingTable[k]);
+  }
+  let mixChartData: PieData = {
+    rings: [groupingsRing, holdingsRing],
+    sorted: true,
+    showRoot: false,
   }
   
   return (

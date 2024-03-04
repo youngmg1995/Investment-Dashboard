@@ -18,28 +18,61 @@ import { Annotation, Label, Connector } from "@visx/annotation";
 
 
 /* *********************************  ********************************* */
+/*                                 PARAMS
+/* *********************************  ********************************* */
+
+const DEFAULT_SEGMENT_COMPARATOR: SegmentComparator = (a, b) => {
+  return b.value - a.value;
+}
+
+
+/* *********************************  ********************************* */
 /*                                 TYPES
 /* *********************************  ********************************* */
 
-export interface PieInputDatum {
+// Input data for defining the chart.
+export interface PieData {
+  rings: RingData[],
+  sorted: boolean,
+  sortComparator?: SegmentComparator;
+  showRoot: boolean;
+};
+export type RingData = {
+  segments: SegmentData[],
+};
+export type SegmentData = {
   key: string,
   label: string,
+  name?: string, 
   value: number,
-  subData?: PieInputDatum[],
-}
+};
+export type SegmentComparator = (a: SegmentData, b: SegmentData) => number;
 
-interface PieDatum {
+
+// Data the defines the actual visual aspects of the pie chart.
+type PieChartData = {
+  rings: PieChartRingData[],
+};
+type PieChartRingData = {
+  segments: PieChartSegmentData[],
+};
+type PieChartSegmentData = {
   key: string,
+  indices: PieChartSegmentIndices,
   label: string,
+  name?: string, 
   value: number,
   ratio: number,
   color: string,
-  subData?: PieDatum[],
-}
+};
+type PieChartSegmentIndices = {
+  ring: number,
+  segment: number,
+};
+
 
 export interface PieChartProps {
-  // portfolioMix: {[key: string]: number};
-  data: PieInputDatum[];
+  data: PieData;
   width: number;
   height: number;
   margin?: typeof defaultMargin;
@@ -104,9 +137,9 @@ const PieChart: React.FC<PieChartProps> = ({
   margin = defaultMargin,
   animate = true,
 }) => {
-  const pieData = convert2PieData(data);
-  const [selectedDatum, setSelectedDatum] = useState<PieDatum | null>(null);
-  const [selectedAlphabetLetter, setSelectedAlphabetLetter] = useState<string | null>(null);
+  const pieData = convert2PieChartData(data);
+  // const [selectedDatum, setSelectedDatum] = useState<PieChartDatum] | null>(null);
+  // const [selectedAlphabetLetter, setSelectedAlphabetLetter] = useState<string | null>(null);
 
   if (width < 10) return null;
 
@@ -122,31 +155,34 @@ const PieChart: React.FC<PieChartProps> = ({
       <GradientPinkBlue id="visx-pie-gradient" />
       <rect rx={14} width={width} height={height} fill="url('#visx-pie-gradient')" />
       <Group top={centerY + margin.top} left={centerX + margin.left}>
-        <Pie
-          data={selectedDatum ? [selectedDatum]: pieData}
-          pieValue={getPieDatumValue}
-          outerRadius={radius}
-          innerRadius={radius - donutThickness}
-          cornerRadius={3}
-          padAngle={0.005}
-        >
-          {(pie) => (
-            <AnimatedPie<PieDatum>
-              {...pie}
-              animate={animate}
-              getKey={(arc) => getPieDatumKey(arc.data)}
-              getLabel={(arc) => getPieDatumLabel(arc.data)}
-              getPercent={(arc) => getPieDatumPercent(arc.data)}
-              onClickDatum={({ data: d }) =>
-                animate && 
-                setSelectedDatum(d && selectedDatum === d ? null : d)
-              }
-              getColor={(arc) => getPieDatumColor(arc.data)}
-              width={width}
-              height={height}
-            />
-          )}
-        </Pie>
+        {pieData.rings.map((r, i) => (
+          <Pie<PieChartSegmentData>
+            data={r.segments}
+            pieValue={(s) => (s.value)}
+            outerRadius={radius + i*(donutThickness+5)}
+            innerRadius={radius + i*(donutThickness+5) - donutThickness}
+            cornerRadius={3}
+            padAngle={0.005}
+          >
+            {(pie) => (
+              <AnimatedPie<PieChartSegmentData>
+                {...pie}
+                animate={animate}
+                getKey={(arc) => arc.data.key}
+                getLabel={(arc) => (arc.data.label)}
+                getPercent={(arc) => getPieSegmentPercent(arc.data)}
+                onClickDatum={({ data: d }) =>
+                  animate
+                  && false
+                  // && setSelectedDatum(d && selectedDatum === d ? null : d)
+                }
+                getColor={(arc) => (arc.data.color)}
+                width={width}
+                height={height}
+              />
+            )}
+          </Pie>
+        ))}
         {/* <Pie
           data={
             selectedAlphabetLetter
@@ -186,39 +222,62 @@ export default PieChart;
 /*                                HELPERS
 /* *********************************  ********************************* */
 
-const getPieDatumKey = (d: PieDatum): string => (d.key);
-const getPieDatumLabel = (d: PieDatum): string => (d.label);
-const getPieDatumValue = (d: PieDatum): number => (d.value);
-const getPieDatumColor = (d: PieDatum): string => (d.color);
-const getPieDatumPercent = (d: PieDatum): string => {
+const getPieSegmentPercent = (d: PieChartSegmentData): string => {
   return `${(d.ratio*100).toFixed(1)}%`
 };
 
 
-const getItemColor = (i: number) => {
-  const index = Math.floor(i) % DEFAULT_COLORS.length;
-  console.log("i", i);
-  console.log("index", index);
+function getSegmentColor(indices: PieChartSegmentIndices): string {
+  // TODO - use ring index in functionality.
+  const index = indices.segment % DEFAULT_COLORS.length;
   return DEFAULT_COLORS[index];
 }
 
-const convert2PieData = (inputData: PieInputDatum[]): PieDatum[] => {
-  let data = [];
+function convert2PieChartData(pieData: PieData): PieChartData {
+  let chartData: PieChartData = {
+    rings: pieData.rings.map((r, i) => convert2PieChartRowData(
+      r, i, pieData.sorted, pieData.sortComparator,
+    )),
+  };
+  return chartData;
+}
+
+function convert2PieChartRowData(
+  pieRing: RingData,
+  ringIndex: number,
+  sorted: boolean = false,
+  sortComparator: SegmentComparator = DEFAULT_SEGMENT_COMPARATOR, 
+): PieChartRingData {
+  const rowTotal = calcRingDataTotalValue(pieRing);
+  let pieSegments = [...pieRing.segments];
+  if (sorted) {pieSegments.sort(sortComparator);}
+  return {
+    segments: pieSegments.map((s, i) => convert2PieChartSegmentData(
+      s, {ring: ringIndex, segment: i}, rowTotal,
+    )), 
+  };
+}
+
+function calcRingDataTotalValue(pieRing: RingData): number {
   let total = 0;
-  for (let i of inputData) {
-    data.push({
-      key: i.key,
-      label: i.label,
-      value: i.value,
-      subData: i.subData ? convert2PieData(i.subData) : undefined,
-    });
-    total += i.value;
-  }
-  data.sort((a, b) => (b.value - a.value));
-  return data.map((d, i) => Object.assign({}, d, {
-    color: getItemColor(i),
-    ratio: d.value / total,
-  }));
+  for (let s of pieRing.segments) {total += s.value;}
+  return total;
+}
+
+function convert2PieChartSegmentData(
+  pieSegment: SegmentData,
+  indices: PieChartSegmentIndices,
+  ratioDenominator: number,
+): PieChartSegmentData {
+  return {
+    key: pieSegment.key,
+    indices: indices,
+    label: pieSegment.label,
+    name: pieSegment.name,
+    value: pieSegment.value,
+    ratio: pieSegment.value / ratioDenominator,
+    color: getSegmentColor(indices),
+  };
 }
 
 
@@ -238,7 +297,6 @@ function AnimatedPie<Datum>({
   animate,
   arcs,
   path,
-  getKey,
   getLabel,
   getPercent,
   getColor,

@@ -12,7 +12,6 @@ import Orders from './Orders';
 import Portfolio from '../../portfolio';
 import AppBar from './AppBar';
 import Copyright from './Copyright';
-import { PieChart, PieInputDatum } from '../charts';
 import PortfolioMixPie from './PortfolioMixPie';
 import SummaryKpi from './SummaryKpi';
 
