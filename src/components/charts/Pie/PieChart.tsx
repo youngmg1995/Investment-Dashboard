@@ -97,6 +97,8 @@ const DEFAULT_COLORS = [
 const DEFAULT_MARGINS = { top: 100, right: 200, bottom: 100, left: 200 };
 const DEFAULT_CORNER_RADIUS = 3;
 const DEFAULT_RING_THICKNESS = 50;
+const DEFAULT_RING_SEPARATION = 5;
+const DEFAULT_PAD_ANGLE = 0.005;
 
 
 // const letters: LetterFrequency[] = letterFrequency.slice(0, 4);
@@ -117,15 +119,14 @@ const PieChart: React.FC<PieChartProps> = ({
   height,
   margin = DEFAULT_MARGINS,
 }) => {
-  const [selectedSegment, setSelectedSegment] = useState<PieChartSegmentData | null>(null);
+  const [selectedSegment, setSelectedSegment] = useState<PieArcDatum<PieChartSegmentData> | null>(null);
 
   const pieData = convert2PieChartData(data);
   const onSegmentClick = (arc: PieArcDatum<PieChartSegmentData>) => {
-    const segment = arc.data;
-    if (selectedSegment && segment.key === selectedSegment.key) {
+    if (selectedSegment && arc.data.key === selectedSegment.data.key) {
       setSelectedSegment(null);
     } else {
-      setSelectedSegment(segment);
+      setSelectedSegment(arc);
     }
   }
 
@@ -143,10 +144,10 @@ const PieChart: React.FC<PieChartProps> = ({
       <rect rx={14} width={width} height={height} fill="url('#visx-pie-gradient')" />
       <Group top={centerY + margin.top} left={centerX + margin.left}>
         {renderPie(
-          pieData, radius, width, height, onSegmentClick
+          pieData, radius, width, height, onSegmentClick, selectedSegment
         )}
         {renderSelectedSegment(
-          selectedSegment, radius, width, height, onSegmentClick
+          (selectedSegment ? selectedSegment.data : null), radius, width, height, onSegmentClick
         )}
       </Group>
     </svg>
@@ -155,12 +156,10 @@ const PieChart: React.FC<PieChartProps> = ({
 
 export default PieChart;
 
+
 /* *********************************  ********************************* */
 /*                                HELPERS
 /* *********************************  ********************************* */
-
-
-
 function convert2PieChartData(pieData: PieData): PieChartData {
   let chartData: PieChartData = {
     rings: pieData.rings.map((r, i) => convert2PieChartRingData(
@@ -176,15 +175,16 @@ function renderPie(
   width: number,
   height: number,
   onSegmentClick: (arc: PieArcDatum<PieChartSegmentData>) => void,
+  selectedSegment: PieArcDatum<PieChartSegmentData> | null,
 ): JSX.Element[] {
  return (pieData.rings.map((ring, ringIndex) => (
     <Pie<PieChartSegmentData>
       data={ring.segments}
       pieValue={(s) => (s.value)}
-      outerRadius={radius + ringIndex*(DEFAULT_RING_THICKNESS+5) + DEFAULT_RING_THICKNESS}
-      innerRadius={radius + ringIndex*(DEFAULT_RING_THICKNESS+5)}
-      cornerRadius={3}
-      padAngle={0.005}
+      outerRadius={radius + ringIndex*(DEFAULT_RING_THICKNESS+DEFAULT_RING_SEPARATION) + DEFAULT_RING_THICKNESS}
+      innerRadius={radius + ringIndex*(DEFAULT_RING_THICKNESS+DEFAULT_RING_SEPARATION)}
+      cornerRadius={DEFAULT_CORNER_RADIUS}
+      padAngle={DEFAULT_PAD_ANGLE}
     >
       {(segment: ProvidedProps<PieChartSegmentData>) => (
         renderSegment(
@@ -194,6 +194,7 @@ function renderPie(
           onSegmentClick,
           width,
           height,
+          selectedSegment,
         )
       )}
     </Pie>
@@ -212,22 +213,23 @@ function renderSelectedSegment(
     <Pie<PieChartSegmentData>
       data={selectedSegment ? [selectedSegment] : []}
       pieValue={(s) => (s.value)}
-      outerRadius={radius - 5*2}
-      cornerRadius={3}
-      padAngle={0.005}
+      outerRadius={radius - DEFAULT_RING_SEPARATION*2}
+      cornerRadius={DEFAULT_CORNER_RADIUS}
+      padAngle={DEFAULT_PAD_ANGLE}
     >
       {(segment: ProvidedProps<PieChartSegmentData>) => (
         <AnimatedPieSegment<PieChartSegmentData>
           {...segment}
           animate={true}
-          annotate={true}
+          annotate={false}
           getKey={(arc) => arc.data.key}
-          getLabel={(arc) => (arc.data.label)}
+          getLabel={(arc) => ("")}
           getPercent={(arc) => getPieSegmentPercent(arc.data)}
           onClickDatum={onSegmentClick}
           getColor={(arc) => (arc.data.color)}
           width={width}
           height={height}
+          selectedSegment={null}
         />
       )}
     </Pie>
@@ -241,7 +243,8 @@ function renderSegment(
   annotate: boolean,
   onSegmentClick: (arc: PieArcDatum<PieChartSegmentData>) => void,
   width: number,
-  height: number, 
+  height: number,
+  selectedSegment: PieArcDatum<PieChartSegmentData> | null,
 ): JSX.Element {
   return (
     <AnimatedPieSegment<PieChartSegmentData>
@@ -255,6 +258,7 @@ function renderSegment(
       getColor={(arc) => (arc.data.color)}
       width={width}
       height={height}
+      selectedSegment={selectedSegment}
     />
   );
 }

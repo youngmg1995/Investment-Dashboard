@@ -10,7 +10,7 @@
 import React from 'react';
 import { ProvidedProps, PieArcDatum } from '@visx/shape/lib/shapes/Pie';
 import { animated, useTransition, to } from '@react-spring/web';
-import { Annotation, Label, Connector } from "@visx/annotation";
+import { Annotation, Label, Connector, CircleSubject } from "@visx/annotation";
 
 
 /* *********************************  ********************************* */
@@ -34,6 +34,7 @@ type AnimatedPieSegmentProps<Datum> = ProvidedProps<Datum> & {
   delay?: number;
   width: number;
   height: number;
+  selectedSegment: PieArcDatum<Datum> | null,
 };
 
 // react-spring transition definitions
@@ -59,12 +60,14 @@ export default function AnimatedPieSegment<Datum>({
   path,
   animate,
   annotate,
+  getKey,
   getLabel,
   getPercent,
   getColor,
   onClickDatum,
   width,
-  height
+  height,
+  selectedSegment,
 }: AnimatedPieSegmentProps<Datum>) {
   const transitions = useTransition<PieArcDatum<Datum>, AnimatedStyles>(
     arcs,
@@ -80,6 +83,7 @@ export default function AnimatedPieSegment<Datum>({
     const [centroidX, centroidY] = path.centroid(arc);
     const hasSpaceForLabel = arc.endAngle - arc.startAngle >= 0.1;
     const labelText = annotate ? getPercent(arc) : getLabel(arc);
+    const selected = (selectedSegment && getKey(arc) === getKey(selectedSegment));
 
     return (
       <g key={key}>
@@ -142,6 +146,35 @@ export default function AnimatedPieSegment<Datum>({
                   }}
                 />
                 <Connector stroke="#fff" />
+              </Annotation>
+            }
+            {selected && 
+              <Annotation
+                x={centroidX}
+                y={centroidY}
+                dx={-centroidX}
+                dy={-centroidY}
+              >
+                <Label
+                  showBackground={false}
+                  showAnchorLine={false}
+                  title={getLabel(arc)}
+                  // subtitle={`${arc.value.toFixed(1)}%`}
+                  subtitle={arc.value.toLocaleString(undefined, {maximumFractionDigits:0})}
+                  fontColor="#fff"
+                  width={100}
+                  // these will work in @visx/annotation@1.4
+                  // see https://github.com/airbnb/visx/pull/989
+                  // horizontalAnchor={centroidX < 0 ? 'end' : 'start'}
+                  // backgroundPadding={{
+                  //   left: 8,
+                  //   right: 8,
+                  //   top: 0,
+                  //   bottom: 0
+                  // }}
+                />
+                <Connector stroke="#fff" />
+                <CircleSubject stroke="#fff" radius={20}/>
               </Annotation>
             }
           </animated.g>
